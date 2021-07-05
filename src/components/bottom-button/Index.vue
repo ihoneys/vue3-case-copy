@@ -1,27 +1,54 @@
 <template>
   <div class="position-btn">
-    <IsEvenShow
-      isSingle="{isSingle}"
-      buttonInfo="{buttonInfo}"
-      onClick="{onClickLeft}"
-    />
-    <Button
-      className="handle-btn"
-      style="{content.style}"
-      onClick="{onClickRight}"
+    <van-button
+      @click="handleLeft"
+      class="marign-right"
+      v-if="!isSingle"
+      type="primary"
+      round
+      plain
+      block
+      >{{ buttonContext[1].text }}</van-button
     >
-      {content.name}
-    </Button>
+    <van-button @click="handleDefault" round plain type="primary" block>{{
+      buttonContext[0].text
+    }}</van-button>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 export default defineComponent({
-  name: 'App',
+  name: "BottomButton",
   props: {
-      
-  }
+    buttonContext: {
+      type: Array,
+      default: () => [
+        {
+          text: "下一步",
+          styleBtn: {},
+        },
+      ],
+    },
+    isSingle: {
+      type: Boolean,
+      default: () => true,
+    },
+  },
+  setup(props, { emit }) {
+    const handleDefault = () => {
+      emit("handleDefault");
+    };
+    const handleLeft = () => {
+      emit("handleLeft");
+    };
+    return {
+      isSingle: props.isSingle,
+      buttonContext: props.buttonContext,
+      handleDefault,
+      handleLeft,
+    };
+  },
 });
 </script>
 
@@ -44,6 +71,9 @@ export default defineComponent({
     border-radius: 0.5rem;
     line-height: 0.44rem;
     font-size: 0.16rem;
+  }
+  .marign-right {
+    margin-right: 10px;
   }
 }
 </style>

@@ -2,8 +2,6 @@
   <div class="entrance-wrapper">
     <div class="header-wrapper"></div>
     <div class="content-wrapper">
-      <IYEntranceList list="{configData}" />
-
       <ul class="layout-list">
         <li className="item-list" v-for="item in entranceData" :key="item">
           <div className="item-column">
@@ -35,19 +33,31 @@
         </div>
       </div>
     </div>
+    <BottomButton @handleDefault="handleDefault" />
   </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue';
+import { useRouter } from "vue-router"
+
+import BottomButton from "../components/bottom-button/Index.vue"
 
 import { entranceData } from "@/common/local-data";
 
 export default defineComponent({
   name: 'App',
+  components: {
+    BottomButton
+  },
   setup() {
+    const router = useRouter()
+    const handleDefault = () => {
+      router.push("/notice")
+    }
     return {
-      entranceData
+      entranceData,
+      handleDefault
     }
   }
 });
@@ -56,7 +66,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .header-wrapper {
   height: 1.69rem;
-  background-image: url('../assets/img/enter-header.png');
+  background-image: url("../assets/img/enter-header.png");
   background-size: 100% 100%;
 }
 .content-wrapper {
