@@ -1,40 +1,39 @@
 <template>
-  <div class="radio-wrapper">
-    <img className="radio" :src="isSelectComputed" alt="" />
+  <div class="radio-wrapper" @click="handleRadio">
+    <img v-if="isSelected" className="radio" src="../../assets/img/fill-oval.png" alt="" />
+    <img v-else className="radio" src="../../assets/img/oval-icon.png" alt="" />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, watchEffect, ref } from 'vue';
 export default defineComponent({
-  name: "App",
+  name: 'App',
   props: {
     isSelected: {
       type: Boolean,
       default: () => false,
     },
   },
-  setup(props) {
-    const { isSelected } = props;
-    const isSelectComputed = computed(() => {
-      if (isSelected) {
-        return "@/assets/img/oval-icon.png";
-      } else {
-        return "@/assets/img/fill-oval.png";
-      }
+  setup(props, { emit }) {
+    const isSelected = ref(props.isSelected);
+    watchEffect(() => {
+      isSelected.value = props.isSelected;
     });
+    const handleRadio = () => {
+      emit('click');
+    };
     return {
-      isSelectComputed,
+      isSelected,
     };
   },
 });
 </script>
 
-<style lang="scss" scope>
+<style lang="scss" scoped>
 .radio {
   width: 20px;
   height: 20px;
   display: block;
-  margin-right: 6px;
 }
 </style>

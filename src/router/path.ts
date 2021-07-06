@@ -10,6 +10,7 @@ import PayOrder from '@/pages/pay-order.vue'
 import MailingWay from '@/pages/mailing-way.vue'
 import Record from '@/pages/record.vue'
 import Signture from '@/pages/signture.vue'
+import Write from '@/pages/write-info.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -66,6 +67,10 @@ const routes: Array<RouteRecordRaw> = [
         name: 'signture',
         component: Signture,
     },
-
+    {
+        path: '/write',
+        name: 'write',
+        component: Write,
+    },
 ]
 export default routes

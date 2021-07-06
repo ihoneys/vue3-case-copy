@@ -1,6 +1,7 @@
 <template>
   <div class="position-btn">
     <van-button
+      :style="buttonContext[1].styleBtn"
       @click="handleLeft"
       class="marign-right"
       v-if="!isSingle"
@@ -10,22 +11,32 @@
       block
       >{{ buttonContext[1].text }}</van-button
     >
-    <van-button @click="handleDefault" round plain type="primary" block>{{
-      buttonContext[0].text
-    }}</van-button>
+    <van-button
+      :style="buttonContext[0].styleBtn"
+      @click="handleDefault"
+      round
+      plain
+      type="primary"
+      block
+      >{{ buttonContext[0].text }}</van-button
+    >
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue';
 export default defineComponent({
-  name: "BottomButton",
+  name: 'BottomButton',
   props: {
     buttonContext: {
       type: Array,
       default: () => [
         {
-          text: "下一步",
+          text: '下一步',
+          styleBtn: {},
+        },
+        {
+          text: '下一步',
           styleBtn: {},
         },
       ],
@@ -37,10 +48,10 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const handleDefault = () => {
-      emit("handleDefault");
+      emit('handleDefault');
     };
     const handleLeft = () => {
-      emit("handleLeft");
+      emit('handleLeft');
     };
     return {
       isSingle: props.isSingle,
@@ -52,7 +63,7 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scope>
+<style lang="scss" scoped>
 .position-btn {
   position: fixed;
   bottom: 0;

@@ -107,10 +107,10 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scope>
+<style lang="scss" scoped>
 .steps-progress {
   position: absolute !important;
-  top: 0.42rem;
+  top: .34rem;
   left: 50%;
   height: 4px;
   width: 87%;

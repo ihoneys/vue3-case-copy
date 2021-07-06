@@ -1,15 +1,33 @@
 <template>
   <div class="detail-wrapper">
-    detail
     <div class="background"></div>
+    <!-- <div class="count-wrapper">
+      <img class="count-icon" src="@/assets/img/count-down.png" alt="" />
+      <div class="count-time">
+        <span class="time">等待支付倒计时：</span>
+        <van-count-down :time="time">
+          <template #default="timeData">
+            <span class="time" v-if="timeData.hours">{{ timeData.hours }}</span>
+            <span class="time" v-if="timeData.hours">:</span>
+            <span class="time">{{ timeData.minutes }}</span>
+            <span class="time">:</span>
+            <span class="time">{{ timeData.seconds }}</span>
+          </template>
+        </van-count-down>
+      </div>
+    </div> -->
     <OrderSteps :currentIndex="currentIndex" />
     <div class="apply-info-box">
       <ApplyContent />
     </div>
     <div class="apply-info-box">
-      <div class="headerline">领取信息</div>
+      <h3 class="headerline">领取信息</h3>
       <div class="address-info">
-        <img class="address-icon" src="@/assets/img/address-icon.png" alt="address" />
+        <img
+          class="address-icon"
+          src="@/assets/img/address-icon.png"
+          alt="address"
+        />
         <div class="info">
           <div>
             <span class="info-name">毛拉啊啊</span>
@@ -20,22 +38,40 @@
         <img class="arrow-icon" src="@/assets/img/next.png" alt="next" />
       </div>
     </div>
+    <BottomButton :isSingle="false" :buttonContext="buttonContext" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import OrderSteps from "@/components/steps-order/Index.vue";
-import ApplyContent from "@/components/apply-info/Index.vue";
+import { defineComponent } from 'vue';
+
+import OrderSteps from '@/components/steps-order/Index.vue';
+import ApplyContent from '@/components/apply-info/Index.vue';
+import BottomButton from '@/components/bottom-button/Index.vue';
+
+const buttonContext = [
+  {
+    text: '去支付',
+    styleBtn: {
+      background: '#FFAE17',
+      border: '1px solid #FFAE17',
+      color: '#fff',
+    },
+  },
+  { text: '取消申请', styleWidth: {} },
+];
 export default defineComponent({
-  name: "detail",
+  name: 'detail',
   components: {
     OrderSteps,
     ApplyContent,
+    BottomButton,
   },
   setup() {
     return {
       currentIndex: 1,
+      time: 290000,
+      buttonContext,
     };
   },
 });
@@ -54,36 +90,36 @@ export default defineComponent({
     margin-top: 0.1rem;
     background-color: #ffffff;
   }
-  .info-name{
-        color: #333333;
-        font-size: .16rem;
-        font-weight: bold;
-    }
-    .info-phone{
-        font-size: .14rem;
-        color: #333333;
-        font-weight: bold;
-        margin-left: .15rem;
-    }
-    .info-text{
-        font-size: .14rem;
-        color: #666666;
-        margin-top: .04rem;
-    }
-    .address-info{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: .2rem;
-    }
-    .address-icon{
-        width: .16rem;
-        height: .19rem;
-    }
-    .arrow-icon{
-        width: .24rem;
-        height: .24rem;
-    }
+  .info-name {
+    color: #333333;
+    font-size: 0.16rem;
+    font-weight: bold;
+  }
+  .info-phone {
+    font-size: 0.14rem;
+    color: #333333;
+    font-weight: bold;
+    margin-left: 0.15rem;
+  }
+  .info-text {
+    font-size: 0.14rem;
+    color: #666666;
+    margin-top: 0.04rem;
+  }
+  .address-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.2rem;
+  }
+  .address-icon {
+    width: 0.16rem;
+    height: 0.19rem;
+  }
+  .arrow-icon {
+    width: 0.24rem;
+    height: 0.24rem;
+  }
 }
 .background {
   position: absolute;
@@ -95,5 +131,32 @@ export default defineComponent({
   height: 74px;
   background: linear-gradient(180deg, #00c6b8 0%, #f5f5f5 100%);
   z-index: 1;
+}
+.count-wrapper {
+  position: relative;
+  height: 64px;
+  line-height: 64px;
+  border-radius: 6px;
+  z-index: 999;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .count-icon {
+    width: 24px;
+    height: 24px;
+    z-index: 999;
+    margin-right: 8px;
+  }
+  .count-time {
+    display: flex;
+    align-items: center;
+  }
+  .time {
+    color: #ffae17;
+    font-size: 16px !important;
+    font-weight: bold;
+  }
 }
 </style>

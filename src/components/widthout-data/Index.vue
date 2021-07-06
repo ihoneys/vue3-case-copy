@@ -23,7 +23,7 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scope>
+<style lang="scss" scoped>
 .without {
   position: absolute;
   top: 50%;
@@ -31,6 +31,9 @@ export default defineComponent({
   transform: translate(-50%, -50%);
   color: #707070;
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   img {
     width: 240px;
     height: 179px;

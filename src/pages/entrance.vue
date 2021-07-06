@@ -3,74 +3,81 @@
     <div class="header-wrapper"></div>
     <div class="content-wrapper">
       <ul class="layout-list">
-        <li className="item-list" v-for="item in entranceData" :key="item">
-          <div className="item-column">
-            <img className="item-icon" :src="item.icon" alt="icon" />
-            <div className="item-title">{{ item.title }}</div>
+        <li class="item-list" v-for="item in listData" :key="item">
+          <div class="item-column">
+            <img class="item-icon" :src="item.icon" alt="icon" />
+            <div class="item-title">{{ item.title }}</div>
           </div>
-          <div className="item-column">
-            <div className="item-icon"></div>
-            <div className="item-content">{{ item.content }}</div>
+          <div class="item-column">
+            <div class="item-icon"></div>
+            <div class="item-content" v-html="item.content" />
           </div>
         </li>
       </ul>
       <div class="button-wrapper">
-        <div className="bottom-flex bottom-left">
+        <router-link to="/record" class="bottom-flex bottom-left">
           <img
-            className="boottom-icon"
+            class="boottom-icon"
             src="@/assets/img/record-icon.png"
             alt=""
           />
           <div>申请记录</div>
-        </div>
-        <div className="bottom-flex bottom-right">
+        </router-link>
+        <router-link to="/notice" class="bottom-flex bottom-right">
           <img
-            className="boottom-icon"
+            class="boottom-icon"
             src="@/assets/img/apply-icon.png"
             alt=""
           />
           <div>立即申请</div>
-        </div>
+        </router-link>
       </div>
     </div>
-    <BottomButton @handleDefault="handleDefault" />
   </div>
 </template>
 
-<script>
-import { defineComponent } from 'vue';
-import { useRouter } from "vue-router"
+<script lang="ts">
+import { defineComponent, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import BottomButton from "../components/bottom-button/Index.vue"
+import { entranceData } from '@/common/local-data';
+import { getHomeUnitConfig } from '@/service/api';
 
-import { entranceData } from "@/common/local-data";
-
+import { isObjEmpty } from '@/utils/utils';
 export default defineComponent({
-  name: 'App',
-  components: {
-    BottomButton
-  },
+  name: 'Home',
   setup() {
-    const router = useRouter()
+    const router = useRouter();
+    const listData = ref(entranceData);
+    onMounted(async () => {
+      const { data } = await getHomeUnitConfig(11);
+      if (!isObjEmpty(data)) {
+        listData.value[0].content = data['suitablePeople'];
+        listData.value[1].content = data['obtainMode'];
+        listData.value[2].content = data['contactMode'];
+      }
+    });
     const handleDefault = () => {
-      router.push("/notice")
-    }
-    return {
-      entranceData,
-      handleDefault
-    }
-  }
-});
+      router.push('/notice');
+    };
 
+    return {
+      listData,
+      handleDefault,
+    };
+  },
+});
 </script>
 <style lang="scss" scoped>
 .header-wrapper {
   height: 1.69rem;
-  background-image: url("../assets/img/enter-header.png");
+  width: 375px;
+  background-image: url('../assets/img/enter-header.png');
   background-size: 100% 100%;
 }
 .content-wrapper {
   padding: 0.3rem 0.15rem;
+  box-sizing: border-box;
 }
 .button-wrapper {
   display: flex;
@@ -91,6 +98,7 @@ export default defineComponent({
     width: 1.68rem;
     height: 0.7rem;
     border-radius: 0.04rem;
+    color: #ffffff;
   }
   .bottom-left {
     background: linear-gradient(270deg, #679df5 0%, #2e5bdd 100%);

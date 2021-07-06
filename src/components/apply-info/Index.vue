@@ -34,20 +34,21 @@
     <li>
       <span className="content-name">预交费用：</span>
       <span className="content-text line-h-20"
-        >¥60（预缴费用不等于实际费用不等于实际费用）</span
+        ><span style="color: #f26317">¥60</span
+        >（预缴费用不等于实际费用不等于实际费用）</span
       >
     </li>
   </ul>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue';
 export default defineComponent({
-  name: "ApplyContent",
+  name: 'ApplyContent',
 });
 </script>
 
-<style lang="scss" scope>
+<style lang="scss" scoped>
 .apply-wrapper {
   font-size: 0.15rem;
   li {
