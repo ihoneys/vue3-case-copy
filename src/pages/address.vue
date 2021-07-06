@@ -1,6 +1,11 @@
 <template>
   <ul class="address-wrapper" v-if="addressList.length > 0">
-    <li class="address-li" v-for="(item, i) in addressList" :key="i">
+    <li
+      class="address-li"
+      v-for="(item, i) in addressList"
+      :key="i"
+      @click="handleItem(item.address)"
+    >
       <div class="address-user">
         <div class="address-flex">
           <div class="address-name">{{ item.name }}</div>
@@ -11,26 +16,47 @@
       <div class="address-content">{{ item.address }}</div>
     </li>
   </ul>
-  <WithoutData :isShow="!addressList.length"/>
+  <WithoutData :isShow="!addressList.length" />
+  <BottomButton :buttonContext="buttonContext" @handleDefault="handleNext" />
 </template>
 
 <script>
 import { defineComponent } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 
 import WithoutData from "@/components/widthout-data/Index.vue"
+import BottomButton from "@/components/bottom-button/Index.vue"
 
 const addressList = [
   { id: 0, name: "啦啦啦", phone: "150231231231", address: "广东省深圳市南山区贝培大道锡山家园274" },
   { id: 1, name: "阿斯顿", phone: "18999992222", address: "广东省深圳市南山区贝培大道锡山家园274广东省深圳市南山区贝培大道锡山家园274广东省深圳市南山区贝培大道锡山家园274" },
 ];
+
+const buttonContext = [{
+  text: "新增地址", styleBtn: {
+    background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
+    boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
+    color: '#fff',
+  },
+}]
 export default defineComponent({
   name: 'addressList',
   components: {
-    WithoutData
+    WithoutData,
+    BottomButton
   },
   setup() {
+    const { dispatch } = useStore()
+    const router = useRouter()
+    const handleItem = (curAddress) => {
+      dispatch("changeCurrentAddressAction", curAddress)
+      router.go(-1)
+    }
     return {
-      addressList
+      addressList,
+      buttonContext,
+      handleItem
     }
   }
 });

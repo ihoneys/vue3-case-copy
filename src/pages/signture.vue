@@ -57,24 +57,57 @@
         </div>
       </div>
     </div>
+    <BottomButton
+      :isSingle="false"
+      :buttonContext="buttonContext"
+      @handleDefault="handleNext"
+      @handleLeft="handlePrev"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
+import { useRouter } from "vue-router";
 
-import HeaderSteps from '@/components/steps/Index.vue';
+import BottomButton from "@/components/bottom-button/Index.vue";
+import HeaderSteps from "@/components/steps/Index.vue";
 
-import { defineSteps } from '../utils/utils';
+import { defineSteps } from "../utils/utils";
+
+const buttonContext = [
+  {
+    text: "下一步",
+    styleBtn: {
+      background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
+      boxShadow: "0px 4px 6px 0px rgba(0,155,143,0.17)",
+      color: "#fff",
+    },
+  },
+  { text: "上一步", styleWidth: {} },
+];
 export default defineComponent({
-  name: 'signture',
+  name: "signture",
   components: {
     HeaderSteps,
+    BottomButton,
   },
   setup() {
+    const router = useRouter()
+
+    const handleNext = () => {
+      router.push("/copy");
+    };
+
+    const handlePrev = () => {
+      router.push("/write");
+    };
     return {
       signShow: false,
       defineSteps,
+      buttonContext,
+      handleNext,
+      handlePrev
     };
   },
 });

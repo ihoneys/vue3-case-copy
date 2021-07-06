@@ -155,13 +155,14 @@
         @cancel="show = !show"
       />
     </van-popup>
-    <BottomButton :isSingle="false" :buttonContext="buttonContext" />
+    <BottomButton :isSingle="false" :buttonContext="buttonContext" @handleDefault="handleNext"/>
   </div>
 </template>
 
 <script>
 import { defineComponent, reactive, ref, toRefs } from 'vue';
 import { useStore } from 'vuex'
+import { useRouter } from 'vue-router';
 
 import BottomButton from "@/components/bottom-button/Index.vue"
 import HeaderSteps from "@/components/steps/Index.vue";
@@ -187,6 +188,8 @@ export default defineComponent({
     IYRadio
   },
   setup() {
+    const router = useRouter()
+
     const curIndex = ref(0)
 
     const steps = ref(defineSteps(!curIndex.value))
@@ -231,9 +234,13 @@ export default defineComponent({
     }
 
     const confirmRelation = (val) => {
-      console.log(66)
       state.show = false
       state.othersRelation = val
+    }
+
+    const handleNext = () => {
+      const nextPath = curIndex.value === 1 ? "/signture" : "/copy"
+      router.push(nextPath)
     }
     return {
       ...toRefs(state),
@@ -247,7 +254,8 @@ export default defineComponent({
       handleTabsItem,
       handleDischargeTime,
       handelConfirmDate,
-      confirmRelation
+      confirmRelation,
+      handleNext
     }
   }
 });
