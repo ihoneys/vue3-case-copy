@@ -28,7 +28,7 @@
           <span class="label-icon">*</span>
           <span>邮寄地址</span>
         </div>
-        <div class="selected" style="padding-right: 8px">
+        <div class="selected" style="padding-right: .08rem">
           <span>{{ currentAddress ? currentAddress : "请选择" }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
@@ -75,7 +75,7 @@ const buttonContext = [
     text: "下一步",
     styleBtn: {
       background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
-      boxShadow: "0px 4px 6px 0px rgba(0,155,143,0.17)",
+      boxShadow: "0rem .04rem .06rem 0rem rgba(0,155,143,0.17)",
       color: "#fff",
     },
   },
@@ -134,22 +134,23 @@ export default defineComponent({
   min-height: 100vh;
 }
 .column-flex-left {
-  width: 120px;
+  width: 1.2rem;
 }
 .column-flex {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 44px;
-  border-bottom: 1px solid #f5f5f5;
-  padding-left: 15px;
+  min-height: .44rem;
+  border-bottom: .01rem solid #f5f5f5;
+  padding-left: .15rem;
+  font-size: .15rem;
   & :deep() .van-radio--horizontal {
     margin-right: 0;
-    padding-right: 15px;
+    padding-right: .15rem;
   }
   .next-icon {
-    width: 24px;
-    height: 24px;
+    width: .24rem;
+    height: .24rem;
   }
   .selected {
     display: flex;
@@ -164,23 +165,23 @@ export default defineComponent({
 }
 .take-address {
   width: 85%;
-  padding-left: 28px;
-  line-height: 24px;
+  padding-left: .28rem;
+  line-height: .24rem;
 }
 .express-wrapper {
-  height: 44px;
-  padding-left: 15px;
-  line-height: 44px;
+  height: .44rem;
+  padding-left: .15rem;
+  line-height: .44rem;
 }
 .user-tips {
-  padding: 15px;
+  padding: .15rem;
   background-color: #f5f5f5;
 }
 .tips-content {
   color: #666666;
-  font-size: 12px;
-  line-height: 20px;
-  margin-top: 4px;
+  font-size: .12rem;
+  line-height: .2rem;
+  margin-top: .04rem;
   background-color: #f5f5f5;
 }
 </style>

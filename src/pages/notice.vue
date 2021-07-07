@@ -1,7 +1,7 @@
 <template>
   <div class="content-wrapper">
     <h3 className="headerline">病案复印须知</h3>
-    <div>须知内容</div>
+    <div v-html="content" />
     <router-link to="/write">
       <BottomButton
         :buttonContext="buttonContext"
@@ -12,7 +12,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+import { getHospitalConfigNotice } from '@/service/api';
 
 import BottomButton from '@/components/bottom-button/Index.vue';
 
@@ -32,9 +35,20 @@ export default defineComponent({
     BottomButton,
   },
   setup() {
-    const handleNext = () => {};
+    const router = useRouter();
+    const content = ref<string>('');
+    onMounted(async () => {
+      const unitId = 11;
+      const { data } = await getHospitalConfigNotice(unitId);
+      content.value = data;
+    });
+    const handleNext = () => {
+      router.push('/write');
+    };
     return {
       buttonContext,
+      content,
+      handleNext,
     };
   },
 });

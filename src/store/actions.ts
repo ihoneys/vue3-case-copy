@@ -10,3 +10,8 @@ export const changeCurrentAddressAction = ({ commit, state }, value) => {
 export const changeIsTakeAction = ({ commit, state }, value) => {
     commit("changeIsTake", value)
 }
+
+export const changeStorageWriteInfoAction = ({ commit, state }, data) => {
+    commit("changeReuqestApplyRecord", data)
+    commit("changeApplyRecordId", data.id)
+}

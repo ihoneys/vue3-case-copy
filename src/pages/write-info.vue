@@ -19,18 +19,43 @@
         </div>
         <div class="uploader-wrapper">
           <div class="uploader-item">
-            <van-uploader max-count="1" v-model="othersCardPositive" />
+            <van-uploader
+              max-count="1"
+              v-model="othersCardPositive"
+              :before-read="uploadOthersCardPositive"
+              accept="image/*"
+              multiple
+            />
             <div class="card-name">上传身份证正面</div>
           </div>
           <div class="uploader-item">
-            <van-uploader max-count="1" v-model="othersCardReverse" />
+            <van-uploader
+              max-count="1"
+              v-model="othersCardReverse"
+              :before-read="uploadOthersCardReverse"
+              accept="image/*"
+              multiple
+            />
             <div class="card-name">上传身份证反面面</div>
           </div>
           <div class="uploader-item">
-            <van-uploader max-count="1" v-model="othersCardHand" />
+            <van-uploader
+              max-count="1"
+              v-model="othersCardHand"
+              :before-read="uploadOthersCardHand"
+              accept="image/*"
+              multiple
+            />
             <div class="card-name">手持身份证</div>
           </div>
         </div>
+      </li>
+      <li class="column-item">
+        <div class="column-item-left">
+          <span class="label-icon">*</span>
+          <span>被委托人姓名</span>
+        </div>
+        <van-field v-model="othersName" placeholder="请输入被委托人姓名" />
       </li>
       <li class="column-item">
         <div class="column-item-left">
@@ -67,11 +92,23 @@
         </div>
         <div class="uploader-wrapper">
           <div class="uploader-item">
-            <van-uploader max-count="1" v-model="patientCardPositive" />
+            <van-uploader
+              max-count="1"
+              v-model="patientCardPositive"
+              :before-read="uploadPatientCardPositive"
+              accept="image/*"
+              multiple
+            />
             <div class="card-name">上传身份证正面</div>
           </div>
           <div class="uploader-item">
-            <van-uploader max-count="1" v-model="patientCardReverse" />
+            <van-uploader
+              max-count="1"
+              :before-read="uploadPatientCardReverse"
+              v-model="patientCardReverse"
+              accept="image/*"
+              multiple
+            />
             <div class="card-name">上传身份证反面面</div>
           </div>
         </div>
@@ -79,9 +116,16 @@
       <li class="column-item">
         <div class="column-item-left">
           <span class="label-icon">*</span>
+          <span>患者姓名</span>
+        </div>
+        <van-field v-model="patientCardId" placeholder="请输入患者姓名" />
+      </li>
+      <li class="column-item">
+        <div class="column-item-left">
+          <span class="label-icon">*</span>
           <span>证件号码</span>
         </div>
-        <van-field v-model="patientCardId" placeholder="请输入患者证件号码" />
+        <van-field v-model="patientName" placeholder="请输入患者证件号码" />
       </li>
       <li class="column-item">
         <div class="column-item-left">
@@ -108,11 +152,23 @@
         <div
           class="selected"
           style="padding-right: 8px"
-          @click="handleDischargeTime"
+          @click="handleDischargeTime('inHosTime')"
         >
-          <span>{{
-            currentSelectedDate ? dischargedTime : '请选择出院时间'
-          }}</span>
+          <span>{{ inHosTime ? inHosTime : '请选择入院时间' }}</span>
+          <img class="next-icon" src="@/assets/img/next.png" alt="" />
+        </div>
+      </div>
+      <div class="column-item">
+        <div class="column-item-left">
+          <span class="label-icon">*</span>
+          <span>出院时间</span>
+        </div>
+        <div
+          class="selected"
+          style="padding-right: 8px"
+          @click="handleDischargeTime('outHosTime')"
+        >
+          <span>{{ outHosTime ? outHosTime : '请选择出院时间' }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </div>
@@ -137,7 +193,7 @@
       :style="{ height: '30%' }"
     >
       <van-datetime-picker
-        v-model="dischargedTime"
+        v-model="curDate"
         type="date"
         title="选择时间"
         :min-date="minDate"
@@ -155,93 +211,264 @@
         @cancel="show = !show"
       />
     </van-popup>
-    <BottomButton :isSingle="false" :buttonContext="buttonContext" @handleDefault="handleNext"/>
+    <BottomButton
+      :isSingle="false"
+      :buttonContext="buttonContext"
+      @handleDefault="handleNext"
+      @handleLeft="handleSave"
+    />
   </div>
 </template>
 
-<script>
-import { defineComponent, reactive, ref, toRefs } from 'vue';
-import { useStore } from 'vuex'
+<script lang="ts">
+import { defineComponent, reactive, ref, toRaw, toRefs } from 'vue';
+import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
-import BottomButton from "@/components/bottom-button/Index.vue"
-import HeaderSteps from "@/components/steps/Index.vue";
-import IYRadio from "@/components/radio/Index.vue";
+import BottomButton from '@/components/bottom-button/Index.vue';
+import HeaderSteps from '@/components/steps/Index.vue';
+import IYRadio from '@/components/radio/Index.vue';
 
-import { defineSteps } from '../utils/utils';
+import { defineSteps, isObjEmpty } from '../utils/utils';
 
-const tabsList = ["本人办理", "他人代办"];
+import {
+  uploadImage,
+  saveApplyRecord,
+  saveApplyRecord,
+  storageApplyRecord,
+  getApplyRecordContext,
+} from '@/service/api';
+import { Toast } from 'vant';
+
+const tabsList = ['本人办理', '他人代办'];
 const columns = ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华'];
 
-const buttonContext = [{
-  text: "下一步", styleBtn: {
-    background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-    boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
-    color: '#fff',
+const buttonContext = [
+  {
+    text: '下一步',
+    styleBtn: {
+      background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
+      boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
+      color: '#fff',
+    },
   },
-}, { text: "暂存", styleWidth: {} }]
+  { text: '暂存', styleWidth: {} },
+];
 export default defineComponent({
   name: 'App',
   components: {
     HeaderSteps,
     BottomButton,
-    IYRadio
+    IYRadio,
   },
   setup() {
-    const router = useRouter()
+    const router = useRouter();
+    const { getters, commit, state: storeState, dispatch } = useStore();
+    const { getIsMyself: isMyself, getNewWriteInfo: writeInfo } = getters;
 
-    const curIndex = ref(0)
+    if (true) {
+      setTimeout(() => {
+        getApplyRecordContext(1039)
+          .then((result) => {
+            console.log(result);
+            dispatch('changeStorageWriteInfoAction', result.data);
+          })
+          .catch((err) => {});
+      },200);
+    }
 
-    const steps = ref(defineSteps(!curIndex.value))
+    const newWriteInfo = JSON.parse(JSON.stringify(writeInfo)); // 克隆 vuex 避免修改 vuex
+
+    const {
+      othersCardPositive,
+      othersCardReverse,
+      othersCardHand,
+      othersName,
+      othersCardId,
+      othersPhone,
+      othersRelation,
+      patientCardPositive,
+      patientCardReverse,
+      patientCardId,
+      patientPhone,
+      patientName,
+      hospitalName,
+      inHosTime,
+      outHosTime,
+      isSelected,
+      feedback,
+    } = writeInfo;
+
+    const unitId = 11;
+    const curIndex = ref(isMyself);
+
+    const steps = ref(defineSteps(!curIndex.value));
 
     const state = reactive({
-      othersCardPositive: [], //委托人身份证正面
-      othersCardReverse: [], // 反面
-      othersCardHand: [], // 手持
-      othersCardId: "", // 身份号
-      othersPhone: "", // 电话号码
-      othersRelation: "", // 与患者关系
-      patientCardPositive: [], //患者身份证,
-      patientCardReverse: [], //患者反面
-      patientCardId: "",
-      patientPhone: "", // 患者手机号
-      hospitalName: "", //院区
-      dischargedTime: new Date(), // 出院时间
-      isSelected: false, // 是否勾选
-      feedback: "",
+      othersCardPositive, //委托人身份证正面
+      othersCardReverse, // 反面
+      othersCardHand, // 手持
+      othersName,
+      othersCardId, // 身份号
+      othersPhone, // 电话号码
+      othersRelation, // 与患者关系
+      patientCardPositive, //患者身份证,
+      patientCardReverse, //患者反面
+      patientCardId,
+      patientPhone, // 患者手机号
+      patientName,
+      hospitalName, // 院区
+      inHosTime, // 入院时间
+      outHosTime, // 出院时间
+      isSelected, // 是否勾选
+      feedback,
       showDate: false,
-      currentSelectedDate: "",
-      show: false
-    })
-
-    const { commit, dispatch } = useStore()
+      show: false,
+      typeTime: 'inHosTime',
+      curDate: new Date(),
+    });
 
     const handleTabsItem = (i) => {
-      curIndex.value = i
-      steps.value = defineSteps(!i)
-      console.log(steps.value)
-      dispatch("changeIsMyselfAction", i)
-    }
+      curIndex.value = i;
+      steps.value = defineSteps(!i);
+      console.log(steps.value);
+      dispatch('changeIsMyselfAction', i);
+    };
 
-    const handleDischargeTime = () => {
-      state.showDate = !state.showDate
-    }
-    // 获取时间
-    const handelConfirmDate = (val) => {
-      state.showDate = false
-      state.dischargedTime = val
-      state.currentSelectedDate = val
-    }
+    const handleDischargeTime = (type) => {
+      state.showDate = !state.showDate;
+      state.typeTime = type;
+    };
+    // 选择入出院时间
+    const handelConfirmDate = (time) => {
+      state.showDate = false;
+      if (state.typeTime === 'inHosTime') {
+        state.inHosTime = timeFormat(time);
+      } else {
+        state.outHosTime = timeFormat(time);
+      }
+    };
+
+    const timeFormat = (time) => {
+      // 时间格式化
+      const year = time.getFullYear();
+      const month = time.getMonth() + 1;
+      const day = time.getDate();
+      return year + '年' + month + '月' + day + '日';
+    };
 
     const confirmRelation = (val) => {
-      state.show = false
-      state.othersRelation = val
-    }
+      state.show = false;
+      state.othersRelation = val;
+    };
 
-    const handleNext = () => {
-      const nextPath = curIndex.value === 1 ? "/signture" : "/copy"
-      router.push(nextPath)
-    }
+    const createMessage = (message) => {
+      Toast.fail(message);
+    };
+
+    const uploadRequestFunc = (file, key) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      uploadImage(unitId, fd)
+        .then((res) => {
+          const { data } = res;
+          if (isObjEmpty(data)) {
+            createMessage('上传失败！');
+            return false;
+          } else {
+            console.log(state[key]);
+            state[key].push({
+              url: res.data.url,
+              isImage: true,
+            });
+            return true;
+          }
+        })
+        .catch((err) => {
+          createMessage('上传失败！');
+          return false;
+        });
+    };
+
+    // 上传患者证件
+    const uploadPatientCardPositive = (file) => {
+      uploadRequestFunc(file, 'patientCardPositive');
+    };
+
+    // 上传身份证反面
+    const uploadPatientCardReverse = (file) => {
+      uploadRequestFunc(file, 'patientCardReverse');
+    };
+
+    // 上传被委托人身份证正面
+    const uploadOthersCardPositive = (file) => {
+      uploadRequestFunc(file, 'othersCardPositive');
+    };
+
+    // 上传被委托人身份证反面
+    const uploadOthersCardReverse = (file) => {
+      uploadRequestFunc(file, 'othersCardReverse');
+    };
+
+    // 被委托人手持身份证
+    const uploadOthersCardHand = (file) => {
+      uploadRequestFunc(file, 'othersCardHand');
+    };
+
+    const saveData = () => {
+      const patientData = {
+        patientPhone: state.patientPhone,
+        patientName: state.patientName,
+        patientIdCardPros:
+          state.patientCardPositive.length > 0 &&
+          state.patientCardPositive[0].url,
+        patientIdCardCons:
+          state.patientCardReverse.length > 0 &&
+          state.patientCardReverse[0].url,
+        patientIdCardNo: state.patientCardId,
+        patientHosCardNo: '',
+        inHosTime: state.inHosTime,
+        outHosTime: state.outHosTime,
+        inHosArea: state.hospitalName,
+        applyType: !!curIndex,
+        remark: state.feedback,
+      };
+
+      const ohtersData = {
+        clientIdCardCons:
+          state.othersCardReverse.length > 0 && state.othersCardReverse[0].url,
+        clientIdCardHold:
+          state.othersCardHand.length > 0 && state.othersCardHand[0].url,
+        clientIdCardPros:
+          state.patientCardPositive.length > 0 &&
+          state.patientCardPositive[0].url,
+        clientName: state.othersName,
+        clientNameRelation: state.othersRelation,
+        clientPhone: state.othersPhone,
+      };
+      return !!curIndex ? patientData : Object.assign(patientData, ohtersData);
+    };
+
+    const handleNext = async () => {
+      const data = saveData();
+      const res = await saveApplyRecord(data);
+
+      if (res.data) {
+        commit('changeApplyRecordId', res.data);
+      }
+      commit('changeWriteInfo', toRaw(state));
+
+      const nextPath = curIndex.value === 1 ? '/signture' : '/copy';
+      router.push(nextPath);
+    };
+    const handleSave = async () => {
+      const data = saveData();
+      const res = await storageApplyRecord(data);
+      if (res.data) {
+        commit('changeApplyRecordId', res.data);
+      }
+    };
+
     return {
       ...toRefs(state),
       steps,
@@ -255,9 +482,15 @@ export default defineComponent({
       handleDischargeTime,
       handelConfirmDate,
       confirmRelation,
-      handleNext
-    }
-  }
+      handleNext,
+      uploadPatientCardPositive,
+      uploadPatientCardReverse,
+      uploadOthersCardPositive,
+      uploadOthersCardReverse,
+      uploadOthersCardHand,
+      handleSave,
+    };
+  },
 });
 </script>
 <style lang="scss" scoped>
@@ -296,7 +529,7 @@ export default defineComponent({
     text-align: right !important;
   }
   .column-item-left {
-    width: 150px;
+    width: 165px;
   }
 }
 .colum-wrapper {
@@ -371,7 +604,7 @@ export default defineComponent({
     font-size: 0.12rem;
   }
 }
-.wrapper-record{
+.wrapper-record {
   background-color: #fff;
   padding-left: 15px;
 }

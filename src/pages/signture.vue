@@ -1,7 +1,7 @@
 <template>
   <div class="signture-wrapper">
     <HeaderSteps :currentIndex="1.1" :steps="defineSteps()" />
-    <div class="content">
+    <div class="content" id="content">
       <h4 class="title">病案复印授权委托书</h4>
       <ul class="content-list">
         <li>
@@ -32,28 +32,33 @@
       </ul>
       <div class="signature-column">
         <span class="column-width">被委托人签名：</span>
-        <!-- <img class="sign-image" src="{imgBase64}" alt="sign" /> -->
+        <van-image
+          v-if="signImage"
+          width="1.02rem"
+          height="0.3rem"
+          fit="cover"
+          :src="signImage"
+        />
       </div>
       <div class="signature-column">
         <span class="column-width">时间：</span>
         <span>2021年10月10日</span>
       </div>
-      <button class="entrusted">被委托人签名</button>
+      <button class="entrusted" @click="signShow = true">被委托人签名</button>
     </div>
     <div v-show="signShow" class="mask-wrapper">
       <div class="content-wrapper">
-        <div class="close-sign"></div>
+        <div class="close-sign" @click="signShow = false">
+          <van-icon color="#ffffff" size="24px" name="cross" />
+        </div>
         <div class="title">被委托人签名</div>
         <div class="sign-area">
-          <!-- <SignatureCanvas backgroundColor="#fff" penColor="#000" canvasProps={{
-              class: "write-name-canvas",
-          }}
-          ref={signCanvas} /> -->
-          签名区域
+          <canvas class="sign-canvas" id="signCanvas" />
+          <!-- 签名区域 -->
         </div>
         <div class="confirm-btn">
-          <button class="confirm reset">重置</button>
-          <button class="confirm">确认</button>
+          <button class="confirm reset" @click="handleReset">重置</button>
+          <button class="confirm" @click="confirmSign">确认</button>
         </div>
       </div>
     </div>
@@ -67,53 +72,110 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { useRouter } from "vue-router";
+import { defineComponent, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import BottomButton from "@/components/bottom-button/Index.vue";
-import HeaderSteps from "@/components/steps/Index.vue";
+import { Toast } from 'vant';
 
-import { defineSteps } from "../utils/utils";
+import BottomButton from '@/components/bottom-button/Index.vue';
+import HeaderSteps from '@/components/steps/Index.vue';
+
+import { defineSteps } from '../utils/utils';
+
+import SignturePad from 'signature_pad';
+import html2canvas from 'html2canvas';
 
 const buttonContext = [
   {
-    text: "下一步",
+    text: '下一步',
     styleBtn: {
-      background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
-      boxShadow: "0px 4px 6px 0px rgba(0,155,143,0.17)",
-      color: "#fff",
+      background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
+      boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
+      color: '#fff',
     },
   },
-  { text: "上一步", styleWidth: {} },
+  { text: '上一步', styleWidth: {} },
 ];
 export default defineComponent({
-  name: "signture",
+  name: 'signture',
   components: {
     HeaderSteps,
     BottomButton,
   },
   setup() {
-    const router = useRouter()
+    const router = useRouter();
+
+    const signShow = ref(false);
+    const signImage = ref(null);
+
+    let signaturePad;
+
+    const initSign = () => {
+      let canvas = document.getElementById('signCanvas');
+      signaturePad = new SignturePad(canvas, {
+        penColor: '#333',
+        backgroundColor: '#f5f5f5',
+      });
+    };
+
+    const getImage = async () => {
+      const contentCavans = document.getElementById('content');
+      const canvas = await html2canvas(contentCavans, {
+        backgroundColor: null, //画出来的图片有白色的边框,不要可设置背景为透明色（null）
+        useCORS: true, //支持图片跨域
+        scale: 1, //设置放大的倍数
+      });
+      let img = new Image();
+      img.src = canvas.toDataURL('image/png');
+      document.querySelector('.signture-wrapper').appendChild(img);
+    };
+
+    onMounted(() => {
+      initSign();
+    });
 
     const handleNext = () => {
-      router.push("/copy");
+      getImage();
+      return;
+      router.push('/copy');
     };
 
     const handlePrev = () => {
-      router.push("/write");
+      router.push('/write');
     };
+
+    const handleReset = () => {
+      signaturePad.clear();
+    };
+
+    const confirmSign = () => {
+      if (signaturePad.isEmpty()) {
+        return Toast('请签名');
+      }
+      signImage.value = signaturePad.toDataURL('image/jpeg');
+      signShow.value = false;
+    };
+
     return {
-      signShow: false,
+      signShow,
       defineSteps,
       buttonContext,
       handleNext,
-      handlePrev
+      handlePrev,
+      initSign,
+      handleReset,
+      confirmSign,
+      signImage,
     };
   },
 });
 </script>
 
 <style lang="scss" scoped>
+.sign-canvas {
+  width: 100%;
+  height: 1.42rem;
+}
 .signture-wrapper {
   background-color: #ffffff;
   .title {
@@ -133,6 +195,8 @@ export default defineComponent({
   }
   .signature-column {
     margin-top: 0.1rem;
+    display: flex;
+    align-items: center;
     .sign-image {
       width: 1.02rem;
       height: 0.3rem;
@@ -190,7 +254,7 @@ export default defineComponent({
     justify-content: center;
     font-size: 0.18rem;
     color: #999;
-    padding: 0.1rem;
+    padding: 0.8rem 0.1rem;
   }
   .confirm {
     width: 1.67rem;
