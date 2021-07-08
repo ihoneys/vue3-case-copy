@@ -8,7 +8,7 @@
     <div class="location-wrapper">
       <div>保险所在地</div>
       <div class="selected" @click="show = true">
-        <span>{{ insuranceLocation ? insuranceLocation : '请选择' }}</span>
+        <span>{{ insuranceLocation ? insuranceLocation : "请选择" }}</span>
         <img class="next-icon" src="@/assets/img/next.png" alt="" />
       </div>
     </div>
@@ -54,15 +54,14 @@ import { defineComponent, onMounted, reactive, ref, toRefs } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
+import { Dialog } from "vant"
+
 import BottomButton from "@/components/bottom-button/Index.vue";
 import LabelList from "@/components/label-list/Index.vue";
 
 import { areaList } from '@vant/area-data';
 import { getCopyLabelData, saveCopyContent, getCopyPurposeContent } from "@/service/api";
 import { isObjEmpty } from "@/utils/utils"
-
-
-const columns = ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华'];
 
 const buttonContext = [
   {
@@ -123,6 +122,16 @@ export default defineComponent({
       const res = await getCopyPurposeContent(applyId)
       console.log(res)
     }
+
+    setTimeout(() => {
+      Dialog.confirm({
+        title: "复印用途说明",
+        message: "如不清楚复印用途所需的资料， 请咨询病区医院或对应的报销机构。",
+        confirmButtonText: "知道了",
+        showCancelButton: false,
+        confirmButtonColor: "#00C6B8"
+      })
+    }, 300)
 
     onMounted(() => {
       initLabelData()

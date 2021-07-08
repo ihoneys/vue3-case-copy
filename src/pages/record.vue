@@ -1,39 +1,46 @@
 <template>
   <div class="record-wrapper">
-    <div class="record-column" v-for="(item, i) in list" :key="i">
-      <ul class="column-list">
-        <li>
-          <div>申请人：{{ item.name }}</div>
-          <div :style="{ color: statusObj[item.orderStatus].color }">
-            {{ statusObj[item.orderStatus].name }}
-          </div>
-        </li>
-        <li>患者姓名：{{ item.patientName }}</li>
-        <li>提交日期：{{ item.date }}</li>
-        <li>就诊时间：2021-04-20至2021</li>
-      </ul>
-      <div class="button-wrapper">
-        <button v-if="item.orderStatus === 2" class="button-item orange">
-          支付
-        </button>
-        <button v-else-if="item.orderStatus === 4" class="button-item black">
-          取消订单
-        </button>
-        <template v-else-if="item.orderStatus === 6">
-          <button class="button-item black">取消订单</button>
-          <button class="button-item orange">补充资料</button>
-        </template>
-        <button v-else-if="item.orderStatus === 8" class="button-item orange">
-          查看物流
-        </button>
-        <button v-else-if="item.orderStatus === 9" class="button-item black">
-          查看自提点
-        </button>
-        <button v-else-if="item.orderStatus === 10" class="button-item black">
-          查看详情
-        </button>
+    <van-list
+      v-model:loading="loading"
+      :finished="finished"
+      finished-text="没有更多了"
+      @load="onLoad"
+    >
+      <div class="record-column" v-for="(item, i) in list" :key="i">
+        <ul class="column-list">
+          <li>
+            <div>申请人：{{ item.name }}</div>
+            <div :style="{ color: statusObj[item.orderStatus].color }">
+              {{ statusObj[item.orderStatus].name }}
+            </div>
+          </li>
+          <li>患者姓名：{{ item.patientName }}</li>
+          <li>提交日期：{{ item.date }}</li>
+          <li>就诊时间：2021-04-20至2021</li>
+        </ul>
+        <div class="button-wrapper">
+          <button v-if="item.orderStatus === 2" class="button-item orange">
+            支付
+          </button>
+          <button v-else-if="item.orderStatus === 4" class="button-item black">
+            取消订单
+          </button>
+          <template v-else-if="item.orderStatus === 6">
+            <button class="button-item black">取消订单</button>
+            <button class="button-item orange">补充资料</button>
+          </template>
+          <button v-else-if="item.orderStatus === 8" class="button-item orange">
+            查看物流
+          </button>
+          <button v-else-if="item.orderStatus === 9" class="button-item black">
+            查看自提点
+          </button>
+          <button v-else-if="item.orderStatus === 10" class="button-item black">
+            查看详情
+          </button>
+        </div>
       </div>
-    </div>
+    </van-list>
   </div>
 </template>
 
@@ -42,64 +49,94 @@ let list: Array<any> = [];
 const mockData = () => {
   return Array.from({ length: 50 }).forEach((item, index) => {
     list.push({
-      name: '李米' + index,
+      name: "李米" + index,
       orderStatus: Math.floor(Math.random() * 10) + 1,
-      patientName: '小米' + index,
-      date: '2021-04-20 22:4',
-      treatmentDate: '2021-04-20',
+      patientName: "小米" + index,
+      date: "2021-04-20 22:4",
+      treatmentDate: "2021-04-20",
     });
   });
 };
 mockData();
-import { defineComponent } from 'vue';
+import { defineComponent, reactive, toRefs } from "vue";
 const statusObj = {
   1: {
-    color: '#FF9F4F',
-    name: '暂存',
+    color: "#FF9F4F",
+    name: "暂存",
   },
   2: {
-    color: '#FF9F4F',
-    name: '待支付',
+    color: "#FF9F4F",
+    name: "待支付",
   },
   3: {
-    color: '#FF9F4F',
-    name: '已取消',
+    color: "#FF9F4F",
+    name: "已取消",
   },
   4: {
-    color: '#FF9F4F',
-    name: '待审核',
+    color: "#FF9F4F",
+    name: "待审核",
   },
   5: {
-    color: '#5ACF83',
-    name: '审核通过',
+    color: "#5ACF83",
+    name: "审核通过",
   },
   6: {
-    color: '#FA5151',
-    name: '审核失败',
+    color: "#FA5151",
+    name: "审核失败",
   },
   7: {
-    color: '#FA5151',
-    name: '审核失败',
+    color: "#FA5151",
+    name: "审核失败",
   },
   8: {
-    color: '#00C6B8',
-    name: '待收货',
+    color: "#00C6B8",
+    name: "待收货",
   },
   9: {
-    color: '#00C6B8',
-    name: '待自提',
+    color: "#00C6B8",
+    name: "待自提",
   },
   10: {
-    color: '#00C6B8',
-    name: '已收货',
+    color: "#00C6B8",
+    name: "已收货",
   },
 };
 export default defineComponent({
-  name: 'App',
+  name: "App",
   setup() {
+    const state = reactive({
+      loading: false,
+      finished: false,
+      list: [] as any,
+    });
+
+    const onLoad = () => {
+      // 异步更新数据
+      // setTimeout 仅做示例，真实场景中一般为 ajax 请求
+      setTimeout(() => {
+        for (let i = 0; i < 10; i++) {
+          state.list.push({
+            name: "李米" + i,
+            orderStatus: Math.floor(Math.random() * 10) + 1,
+            patientName: "小米" + i,
+            date: "2021-04-20 22:4",
+            treatmentDate: "2021-04-20",
+          });
+        }
+
+        // 加载状态结束
+        state.loading = false;
+
+        // 数据全部加载完成
+        if (state.list.length >= 40) {
+          state.finished = true;
+        }
+      }, 1000);
+    };
     return {
-      list,
+      ...toRefs(state),
       statusObj,
+      onLoad
     };
   },
 });
