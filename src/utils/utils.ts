@@ -51,3 +51,13 @@ export const debounce = (func, wait, immediate) => {
             func.apply(this, args);
     }
 }
+
+export function getYearsMonthDay(): string {
+    function addDateZero(num) {
+        return num < 10 ? '0' + num : num
+    }
+    const d = new Date()
+    const yearsMonthDay = `${d.getFullYear()}年${addDateZero(d.getMonth() + 1)}月${addDateZero(d.getDate())}日`
+        
+    return yearsMonthDay
+}

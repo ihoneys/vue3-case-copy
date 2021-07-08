@@ -13,7 +13,7 @@ const app = createApp(App);
 // import VConsole from 'vconsole'
 // let vconsole = new VConsole()
 // export default vconsole
-import { Progress, Button, Cell, Field, Picker, Popup, Switch, RadioGroup, Radio, Uploader, DatetimePicker, CountDown, Icon, Toast, Image } from 'vant';
+import { Progress, Button, Cell, Field, Picker, Popup, Switch, RadioGroup, Radio, Uploader, DatetimePicker, CountDown, Icon, Toast, Image, Area } from 'vant';
 
 app
     .use(store)
@@ -33,6 +33,7 @@ app
     .use(Icon)
     .use(Toast)
     .use(Image)
+    .use(Area)
     .mount('#app');
 
 

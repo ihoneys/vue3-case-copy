@@ -6,28 +6,23 @@
       <ul class="content-list">
         <li>
           <span class="column-name">委托人姓名：</span>
-          <span class="">213123</span>
+          <span class="">{{ patientName }}</span>
         </li>
         <li>
           <span class="column-name">委托人身份证：</span>
-          <span>4564321858050045</span>
+          <span>{{ patientCardId }}</span>
         </li>
         <li>
           <span class="column-name">被委托人姓名：</span>
-          <span>侯德胜</span>
+          <span>{{ othersName }}</span>
         </li>
         <li>
           <span class="column-name">被委托人身份证：</span>
-          <span>4564321858050045</span>
+          <span>{{ othersCardId }}</span>
         </li>
         <li>
           <span class="column-name">委托事项：</span>
-          <span class="matter"
-            >因复印需要，委托我的xx关系xx姓名为我
-            的代理人，前往xxx医院复印我在xx科室住院治疗的
-            病例资料，委托人签署该授权委托书真实有效，如有
-            不实，本人承担全部法律责任。</span
-          >
+          <span class="matter">{{ matter }}</span>
         </li>
       </ul>
       <div class="signature-column">
@@ -42,14 +37,14 @@
       </div>
       <div class="signature-column">
         <span class="column-width">时间：</span>
-        <span>2021年10月10日</span>
+        <span>{{ currentDate }}</span>
       </div>
       <button class="entrusted" @click="signShow = true">被委托人签名</button>
     </div>
     <div v-show="signShow" class="mask-wrapper">
       <div class="content-wrapper">
         <div class="close-sign" @click="signShow = false">
-          <van-icon color="#ffffff" size="24px" name="cross" />
+          <van-icon color="#ffffff" size=".24rem" name="cross" />
         </div>
         <div class="title">被委托人签名</div>
         <div class="sign-area">
@@ -72,15 +67,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
+import { defineComponent, onMounted, reactive, ref, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
 import { Toast } from 'vant';
 
 import BottomButton from '@/components/bottom-button/Index.vue';
 import HeaderSteps from '@/components/steps/Index.vue';
 
-import { defineSteps } from '../utils/utils';
+import { defineSteps, isObjEmpty, getYearsMonthDay } from '../utils/utils';
+import {
+  getEntrustedMattersByParams,
+  uploadImageBas64,
+  saveMatterContent,
+} from '@/service/api';
 
 import SignturePad from 'signature_pad';
 import html2canvas from 'html2canvas';
@@ -90,7 +91,7 @@ const buttonContext = [
     text: '下一步',
     styleBtn: {
       background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-      boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
+      boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
       color: '#fff',
     },
   },
@@ -104,9 +105,42 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter();
+    const { getters, commit } = useStore();
+    const {
+      getNewWriteInfo: writeInfo,
+      getRequestParams: requestParams,
+      getApplyRecordId: applyRecordId,
+      getSignImage,
+    } = getters;
 
     const signShow = ref(false);
-    const signImage = ref(null);
+    const signImage = ref(getSignImage);
+    const currentDate = getYearsMonthDay();
+    let powerAttorneyPic = '';
+
+    const { patientName, patientCardId, othersName, othersCardId } = writeInfo;
+
+    const state = reactive({
+      patientName,
+      patientCardId,
+      othersName,
+      othersCardId,
+      matter:
+        '因复印需要，委托我的xx关系xx姓名为我的代理人，前往xxx医院复印我在xx科室住院治疗的病例资料，委托人签署该授权委托书真实有效，如有不实，本人承担全部法律责任。',
+    });
+
+    onMounted(async () => {
+      const data = {
+        unitId: requestParams.unitId,
+        clientNameRelation: writeInfo.othersRelation,
+        patientName,
+        inHosArea: writeInfo.hospitalName,
+      };
+      const { data: matter } = await getEntrustedMattersByParams(data);
+      if (matter) {
+        state.matter = matter;
+      }
+    });
 
     let signaturePad;
 
@@ -118,16 +152,58 @@ export default defineComponent({
       });
     };
 
-    const getImage = async () => {
+    const _uploadImageFunc = async (imageBse64, isSign = true) => {
+      const fd = new FormData();
+      fd.append('base64Data', imageBse64);
+      const res = await uploadImageBas64(fd);
+      const { data } = res;
+      if (isObjEmpty(data)) {
+        createMessage('上传失败！');
+      } else {
+        if (isSign) {
+          signImage.value = data.url;
+          commit('changeSignImage', data.url);
+        } else {
+          powerAttorneyPic = data.url;
+        }
+      }
+    };
+
+    const confirmSign = () => {
+      if (signaturePad.isEmpty()) {
+        return Toast('请签名');
+      }
+      const imageBse64 = signaturePad.toDataURL('image/jpeg');
+      signShow.value = false;
+      _uploadImageFunc(imageBse64);
+    };
+
+    const getImageAndNext = async () => {
       const contentCavans = document.getElementById('content');
       const canvas = await html2canvas(contentCavans, {
         backgroundColor: null, //画出来的图片有白色的边框,不要可设置背景为透明色（null）
         useCORS: true, //支持图片跨域
         scale: 1, //设置放大的倍数
       });
-      let img = new Image();
-      img.src = canvas.toDataURL('image/png');
-      document.querySelector('.signture-wrapper').appendChild(img);
+      const imageBas64 = canvas.toDataURL('image/jpeg');
+      _uploadImageFunc(imageBas64, false);
+
+      const data = {
+        applyId: applyRecordId,
+        clientIdCardNo: othersCardId,
+        clientName: othersName,
+        clientSignature: signImage.value,
+        powerAttorneyPic,
+      };
+      const { returnCode } = await saveMatterContent(data);
+      if (returnCode === 0) {
+        router.push('/copy');
+      } else {
+        createMessage(returnMsg);
+      }
+      // const img = new Image();
+      // img.src = canvas.toDataURL('image/png');
+      // document.querySelector('.signture-wrapper').appendChild(img);
     };
 
     onMounted(() => {
@@ -135,9 +211,7 @@ export default defineComponent({
     });
 
     const handleNext = () => {
-      getImage();
-      return;
-      router.push('/copy');
+      getImageAndNext();
     };
 
     const handlePrev = () => {
@@ -148,15 +222,12 @@ export default defineComponent({
       signaturePad.clear();
     };
 
-    const confirmSign = () => {
-      if (signaturePad.isEmpty()) {
-        return Toast('请签名');
-      }
-      signImage.value = signaturePad.toDataURL('image/jpeg');
-      signShow.value = false;
+    const createMessage = (message) => {
+      Toast.fail(message);
     };
 
     return {
+      ...toRefs(state),
       signShow,
       defineSteps,
       buttonContext,
@@ -166,6 +237,7 @@ export default defineComponent({
       handleReset,
       confirmSign,
       signImage,
+      currentDate,
     };
   },
 });
@@ -186,6 +258,7 @@ export default defineComponent({
   }
   .content-list li {
     margin-top: 0.2rem;
+    margin-bottom: 0.2rem;
   }
   .column-name {
     color: #999999;

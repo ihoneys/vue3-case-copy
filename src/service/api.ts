@@ -42,6 +42,15 @@ export const uploadImage = (unitId, data) => {
     })
 }
 
+// base64上传
+export const uploadImageBas64 = (data) => {
+    return request({
+        method: "post",
+        url: "/file/uploadBase64File",
+        data
+    })
+}
+
 // 填写信息下一步保存
 export const saveApplyRecord = (data) => {
     return request({
@@ -74,11 +83,76 @@ export const getApplyRecordDetail = (recordId) => {
 export const getApplyRecordContext = (recordId) => {
     return request({
         method: "get",
-        url: `/applyRecord/get/${recordId}`,   
+        url: `/applyRecord/get/${recordId}`,
+    })
+}
+
+// 委托书配置
+export const getEntrustedMattersByParams = (data) => {
+    return request({
+        method: "post",
+        url: "/configItem/getEntrustedMattersByParams",
+        data
+    })
+}
+
+// 委托书保存
+export const saveMatterContent = (data) => {
+    return request({
+        method: "post",
+        url: "/powerAttorney/save",
+        data
+    })
+}
+
+// 复印用途保存
+export const saveCopyContent = (data) => {
+    return request({
+        method: "post",
+        url: "/copyPurpose/save",
+        data
+    })
+}
+
+// 根据申请记录id(applyId)获取复印用途信息
+export const getCopyPurposeContent = (applyId) => {
+    return request({
+        method: "get",
+        url: `/copyPurpose/get/${applyId}`
     })
 }
 
 
+// 地址列表
+export const getAddressList = (userId) => {
+    return request({
+        method: "get",
+        url: `/addressManagement/list`,
+        params: {
+            userId
+        }
+    })
+}
+
+// 保存 or 更新地址
+export const saveOrUpdateAddress = (data) => {
+    return request({
+        method: "post",
+        url: `/addressManagement/save`,
+        data
+    })
+}
+
+// 根据医院id获取快递公司列表接口
+export const getExpressCompany = (unitId) => {
+    return request({
+        method: "get",
+        url: `/configItem/getExpressCompanyListByUnitId`,
+        params: {
+            unitId
+        }
+    })
+}
 
 
 

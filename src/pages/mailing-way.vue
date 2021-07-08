@@ -1,7 +1,7 @@
 <template>
   <div class="steps">
     <ul>
-      <HeaderSteps :steps="steps"  :currentIndex="1"/>
+      <HeaderSteps :steps="steps" :currentIndex="1" />
       <li class="column-flex">
         <div class="column-flex-left">
           <span class="label-icon">*</span>
@@ -21,15 +21,15 @@
           <span class="label-icon">*</span>
           <span>快递公司</span>
         </div>
-        <div class="pd-r-15">EMS</div>
+        <div class="pd-r-15">{{expressCompany}}</div>
       </li>
       <li class="column-flex" v-if="checked === '1'" @click="handleAddress">
         <div class="column-flex-left">
           <span class="label-icon">*</span>
           <span>邮寄地址</span>
         </div>
-        <div class="selected" style="padding-right: .08rem">
-          <span>{{ currentAddress ? currentAddress : "请选择" }}</span>
+        <div class="selected" style="padding-right: 0.08rem">
+          <span>{{ currentAddress ? currentAddress : '请选择' }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </li>
@@ -61,29 +61,30 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import { useStore } from "vuex";
-import { useRouter } from "vue-router";
+import { defineComponent, onMounted, ref } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
 
-import HeaderSteps from "@/components/steps/Index.vue";
-import BottomButton from "@/components/bottom-button/Index.vue";
+import HeaderSteps from '@/components/steps/Index.vue';
+import BottomButton from '@/components/bottom-button/Index.vue';
 
-import { defineSteps } from "../utils/utils";
+import { defineSteps } from '../utils/utils';
+import { getExpressCompany } from '@/service/api';
 
 const buttonContext = [
   {
-    text: "下一步",
+    text: '下一步',
     styleBtn: {
-      background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
-      boxShadow: "0rem .04rem .06rem 0rem rgba(0,155,143,0.17)",
-      color: "#fff",
+      background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
+      boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
+      color: '#fff',
     },
   },
-  { text: "上一步", styleWidth: {} },
+  { text: '上一步', styleWidth: {} },
 ];
 
 export default defineComponent({
-  name: "App",
+  name: 'App',
   components: {
     HeaderSteps,
     BottomButton,
@@ -92,27 +93,38 @@ export default defineComponent({
     const { getters, dispatch } = useStore();
     const router = useRouter();
 
-    const { getIsMyself, getCurrentAddress, getIsTake } = getters;
-
+    const {
+      getIsMyself,
+      getCurrentAddress,
+      getIsTake,
+      getRequestParams: requestParams,
+    } = getters;
+    const { unitId } = requestParams;
     console.log(getters.getIsMyself);
     const checked = ref<String>(getIsTake);
+    const expressCompany = ref("")
 
     const watchChange = (val) => {
       checked.value = val;
-      dispatch("changeIsTakeAction", val);
+      dispatch('changeIsTakeAction', val);
     };
 
+    onMounted(async () => {
+      const res = await getExpressCompany(unitId);
+      console.log(res)
+    });
+
     const handleAddress = () => {
-      router.push("/address");
+      router.push('/address');
     };
 
     const handleNext = () => {
-      router.push("/payOrder")
+      router.push('/payOrder');
     };
 
     const handlePrev = () => {
-      router.push("/copy")
-    }
+      router.push('/copy');
+    };
     return {
       steps: defineSteps(!getIsMyself),
       show: false,
@@ -122,7 +134,9 @@ export default defineComponent({
       handleAddress,
       buttonContext,
       handleNext,
-      handlePrev
+      handlePrev,
+      currentIndex: !getIsMyself ? 1 : 2,
+      expressCompany
     };
   },
 });
@@ -140,17 +154,17 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: .44rem;
-  border-bottom: .01rem solid #f5f5f5;
-  padding-left: .15rem;
-  font-size: .15rem;
+  min-height: 0.44rem;
+  border-bottom: 0.01rem solid #f5f5f5;
+  padding-left: 0.15rem;
+  font-size: 0.15rem;
   & :deep() .van-radio--horizontal {
     margin-right: 0;
-    padding-right: .15rem;
+    padding-right: 0.15rem;
   }
   .next-icon {
-    width: .24rem;
-    height: .24rem;
+    width: 0.24rem;
+    height: 0.24rem;
   }
   .selected {
     display: flex;
@@ -165,23 +179,23 @@ export default defineComponent({
 }
 .take-address {
   width: 85%;
-  padding-left: .28rem;
-  line-height: .24rem;
+  padding-left: 0.28rem;
+  line-height: 0.24rem;
 }
 .express-wrapper {
-  height: .44rem;
-  padding-left: .15rem;
-  line-height: .44rem;
+  height: 0.44rem;
+  padding-left: 0.15rem;
+  line-height: 0.44rem;
 }
 .user-tips {
-  padding: .15rem;
+  padding: 0.15rem;
   background-color: #f5f5f5;
 }
 .tips-content {
   color: #666666;
-  font-size: .12rem;
-  line-height: .2rem;
-  margin-top: .04rem;
+  font-size: 0.12rem;
+  line-height: 0.2rem;
+  margin-top: 0.04rem;
   background-color: #f5f5f5;
 }
 </style>

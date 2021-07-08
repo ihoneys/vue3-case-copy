@@ -8,7 +8,7 @@
     <div class="location-wrapper">
       <div>保险所在地</div>
       <div class="selected" @click="show = true">
-        <span>{{ insuranceLocation ? insuranceLocation : "请选择" }}</span>
+        <span>{{ insuranceLocation ? insuranceLocation : '请选择' }}</span>
         <img class="next-icon" src="@/assets/img/next.png" alt="" />
       </div>
     </div>
@@ -20,15 +20,22 @@
     <div class="print-wrapper">
       <div>打印份数</div>
       <div class="count-wrapper">
-        <div class="count">-</div>
-        <div class="numbers">1</div>
-        <div class="count">+</div>
+        <div
+          class="count"
+          :class="[count === 0 ? 'over-reduce' : '']"
+          @click="reduce"
+        >
+          -
+        </div>
+        <div class="numbers">{{ count }}</div>
+        <div class="count" @click="increase">+</div>
       </div>
     </div>
     <van-popup v-model:show="show" position="bottom" :style="{ height: '30%' }">
-      <van-picker
+      <van-area
         title="选择省市"
-        :columns="columns"
+        :columns-num="2"
+        :area-list="areaList"
         @confirm="confirm"
         @cancel="show = !show"
       />
@@ -43,15 +50,17 @@
 </template>
 
 <script>
-import { defineComponent, reactive, ref, toRefs } from 'vue';
+import { defineComponent, onMounted, reactive, ref, toRefs } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
 import BottomButton from "@/components/bottom-button/Index.vue";
 import LabelList from "@/components/label-list/Index.vue";
 
-const copyContent = ref([{ name: "其他", checked: false }, { name: "其他", checked: false }, { name: "其他", checked: false }])
-const copyPurpose = ref([{ name: "其他", checked: false }, { name: "其他", checked: false }, { name: "其他", checked: false }])
+import { areaList } from '@vant/area-data';
+import { getCopyLabelData, saveCopyContent, getCopyPurposeContent } from "@/service/api";
+import { isObjEmpty } from "@/utils/utils"
+
 
 const columns = ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华'];
 
@@ -75,35 +84,133 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter()
-    const { getters } = useStore()
-    const { getIsMyself: isMyself, getCopyPageData: copyPageData } = getters
+    const { getters, commit } = useStore()
+    const { getIsMyself: isMyself, getCopyPageData: copyPageData, getRequestParams: requestParams, getApplyRecordId: applyId
+    } = getters
+
+    const { unitId } = requestParams
+    const { copyContent, copyPurpose, printNums, insuranceLocation } = copyPageData
+
+
 
     const state = reactive({
+      insuranceLocation,
+      count: printNums,
+      copyContent: [],
+      copyPurpose: [],
       show: false,
-      insuranceLocation: copyPageData.insuranceLocation
+      areaCode: ""
     })
-    const confirm = (val) => {
-      state.insuranceLocation = val
+
+
+    const initLabelData = async () => {
+      const { data } = await getCopyLabelData(unitId)
+      if (!isObjEmpty(data)) {
+        for (const key in data) {
+          if (state[key] && data[key].split(",").length > 0) {
+            state[key] = []
+            data[key].split(",").forEach(item => {
+              const checked = copyPageData[key].includes(item)
+              state[key].push({ name: item, checked })
+            })
+          }
+        }
+      }
+    }
+
+    const getCopyCotent = async () => {
+      console.log(applyId)
+      const res = await getCopyPurposeContent(applyId)
+      console.log(res)
+    }
+
+    onMounted(() => {
+      initLabelData()
+      getCopyCotent()
+    })
+
+
+    const confirm = (location) => {
+      let codeStr = ""
+      location.forEach(item => {
+        codeStr += item.code + ","
+      })
+      state.areaCode = codeStr.substr(0, codeStr.length - 1)
+      state.insuranceLocation = location[0].name + location[1].name
       state.show = false
     }
 
+
+
+
+
     const handleNext = () => {
-      router.push("/mailing")
+      saveMethods()
+      // return
     };
+
+    const saveMethods = async () => {
+      const { selectedContent, selectedPurpose } = getSelectedLabel()
+      commit("changeCopyData", { printNums: state.count, copyContent: selectedContent, copyPurpose: selectedPurpose, insuranceLocation: state.insuranceLocation })
+      const postData = {
+        applyId,
+        copyContent: selectedContent,
+        copyPurpose: selectedPurpose,
+        printingSheets: state.count,
+        reimbursementAddress: state.insuranceLocation,
+        reimbursementAddressCode: state.areaCode
+      }
+      const { returnCode } = await saveCopyContent(postData)
+      if (returnCode === 0) {
+        router.push("/mailing")
+      }
+    }
+
+    const getSelectedLabel = () => {
+      let copyContentStr = state.copyContent.reduce((acc, cur, index) => {
+        if (cur.checked) {
+          acc += cur.name + ','
+        }
+        return acc
+      }, '')
+      copyContentStr = copyContentStr.substr(0, copyContentStr.length - 1)
+
+      let copyPurposeStr = state.copyPurpose.reduce((acc, cur, index) => {
+        if (cur.checked) {
+          acc += cur.name + ','
+        }
+        return acc
+      }, '')
+      copyPurposeStr = copyPurposeStr.substr(0, copyPurposeStr.length - 1)
+      return {
+        selectedContent: copyContentStr,
+        selectedPurpose: copyPurposeStr
+      }
+    }
 
     const handlePrev = () => {
       const callbackPath = isMyself === 0 ? "/write" : "/signture"
       router.push(callbackPath)
     }
+
+    const reduce = () => {
+      if (state.count > 0) {
+        state.count--
+      }
+    }
+
+    const increase = () => {
+      state.count++
+    }
     return {
       ...toRefs(state),
-      copyContent,
-      copyPurpose,
-      columns,
+      areaList,
       confirm,
       buttonContext,
       handleNext,
-      handlePrev
+      handlePrev,
+      reduce,
+      increase
     }
   }
 });
@@ -158,5 +265,9 @@ export default defineComponent({
     margin: 30px 0;
     border-bottom: 1px solid #f5f5f5;
   }
+}
+.over-reduce {
+  color: #cccccc !important;
+  border: 1.5px solid #cccccc !important;
 }
 </style>

@@ -4,34 +4,47 @@
       class="address-li"
       v-for="(item, i) in addressList"
       :key="i"
-      @click="handleItem(item.address)"
+      @click="handleItem(item.address, item.addressDetail)"
     >
       <div class="address-user">
         <div class="address-flex">
-          <div class="address-name">{{ item.name }}</div>
+          <div class="address-name">{{ item.consigneeName }}</div>
           <div class="address-phone">{{ item.phone }}</div>
         </div>
-        <img class="edit-icon" src="@/assets/img/edit.png" alt="" />
+        <img
+          class="edit-icon"
+          src="@/assets/img/edit.png"
+          alt=""
+          @click.stop="editAddress(item)"
+        />
       </div>
-      <div class="address-content">{{ item.address }}</div>
+
+      <div class="address-content">
+        <span class="default-class" v-if="item.isDefaultAddress">默认</span>
+        <span>{{ item.address }}{{ item.addressDetail }}</span>
+      </div>
     </li>
   </ul>
-  <WithoutData :isShow="!addressList.length" />
-  <BottomButton :buttonContext="buttonContext" @handleDefault="handleNext" />
+  <WithoutData :isShow="!!addressList.length" />
+  <BottomButton :buttonContext="buttonContext" @handleDefault="handleAdd" />
 </template>
 
 <script>
-import { defineComponent } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+
+import { getAddressList } from '@/service/api';
+
 
 import WithoutData from "@/components/widthout-data/Index.vue"
 import BottomButton from "@/components/bottom-button/Index.vue"
 
-const addressList = [
-  { id: 0, name: "啦啦啦", phone: "150231231231", address: "广东省深圳市南山区贝培大道锡山家园274" },
-  { id: 1, name: "阿斯顿", phone: "18999992222", address: "广东省深圳市南山区贝培大道锡山家园274广东省深圳市南山区贝培大道锡山家园274广东省深圳市南山区贝培大道锡山家园274" },
-];
+
+// const addressList = [
+//   { id: 0, name: "啦啦啦", phone: "150231231231", address: "广东省深圳市南山区贝培大道锡山家园274" },
+//   { id: 1, name: "阿斯顿", phone: "18999992222", address: "广东省深圳市南山区贝培大道锡山家园274广东省深圳市南山区贝培大道锡山家园274广东省深圳市南山区贝培大道锡山家园274" },
+// ];
 
 const buttonContext = [{
   text: "新增地址", styleBtn: {
@@ -47,16 +60,39 @@ export default defineComponent({
     BottomButton
   },
   setup() {
-    const { dispatch } = useStore()
+    const { dispatch, getters, commit } = useStore()
+    const { getRequestParams: requestParams } = getters
     const router = useRouter()
-    const handleItem = (curAddress) => {
-      dispatch("changeCurrentAddressAction", curAddress)
+    const { userId } = requestParams
+    const addressList = ref([])
+    const getAddressListRequest = async () => {
+      const { data } = await getAddressList(userId)
+      addressList.value = data
+    }
+    onMounted(getAddressListRequest)
+
+    const handleItem = (address, addressDetail) => {
+      dispatch("changeCurrentAddressAction", address + addressDetail)
       router.go(-1)
+    }
+    const handleAdd = () => {
+      router.push("/addAddress")
+    }
+    const editAddress = ({ consigneeName, phone, isDefaultAddress, address, addressDetail, id }) => {
+      commit("changeUpdateAddress", { user: consigneeName, phone, defaultChecked: isDefaultAddress, address: addressDetail, area: address, id })
+      router.push({
+        name: "addAddress",
+        query: {
+          type: "edit"
+        }
+      })
     }
     return {
       addressList,
       buttonContext,
-      handleItem
+      handleItem,
+      handleAdd,
+      editAddress
     }
   }
 });
@@ -88,6 +124,7 @@ export default defineComponent({
     color: #666666;
     width: 90%;
     line-height: 20px;
+    margin-top: 6px;
   }
   .edit-icon {
     width: 14px;
@@ -113,6 +150,15 @@ export default defineComponent({
       width: 240px;
       height: 179px;
     }
+  }
+  .default-class {
+    font-size: 10px;
+    border: 0.01rem solid #00c6b8;
+    background-color: #f0fcfb;
+    color: #00c6b8;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin-right: 10px;
   }
 }
 </style>

@@ -118,14 +118,14 @@
           <span class="label-icon">*</span>
           <span>患者姓名</span>
         </div>
-        <van-field v-model="patientCardId" placeholder="请输入患者姓名" />
+        <van-field v-model="patientName" placeholder="请输入患者姓名" />
       </li>
       <li class="column-item">
         <div class="column-item-left">
           <span class="label-icon">*</span>
           <span>证件号码</span>
         </div>
-        <van-field v-model="patientName" placeholder="请输入患者证件号码" />
+        <van-field v-model="patientCardId" placeholder="请输入患者证件号码" />
       </li>
       <li class="column-item">
         <div class="column-item-left">
@@ -221,9 +221,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, toRaw, toRefs } from 'vue';
+import {
+  computed,
+  defineComponent,
+  reactive,
+  ref,
+  toRaw,
+  toRefs,
+  nextTick,
+  watch,
+  forceUpdate,
+} from 'vue';
 import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 import BottomButton from '@/components/bottom-button/Index.vue';
 import HeaderSteps from '@/components/steps/Index.vue';
@@ -239,6 +249,7 @@ import {
   getApplyRecordContext,
 } from '@/service/api';
 import { Toast } from 'vant';
+import { create } from 'domain';
 
 const tabsList = ['本人办理', '他人代办'];
 const columns = ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华'];
@@ -263,21 +274,27 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter();
+    const route = useRoute();
+    console.log(route.query);
+    const { recordId } = route.query;
     const { getters, commit, state: storeState, dispatch } = useStore();
-    const { getIsMyself: isMyself, getNewWriteInfo: writeInfo } = getters;
 
-    if (true) {
-      setTimeout(() => {
-        getApplyRecordContext(1039)
-          .then((result) => {
-            console.log(result);
-            dispatch('changeStorageWriteInfoAction', result.data);
-          })
-          .catch((err) => {});
-      },200);
+    const {
+      getIsMyself: isMyself,
+      getNewWriteInfo: writeInfo,
+      getRequestParams: requestParams,
+    } = getters;
+
+    if (recordId) {
+      getApplyRecordContext(1064)
+        .then((result) => {
+          console.log(result);
+          dispatch('changeStorageWriteInfoAction', result.data);
+        })
+        .catch((err) => {});
     }
 
-    const newWriteInfo = JSON.parse(JSON.stringify(writeInfo)); // 克隆 vuex 避免修改 vuex
+    const newWriteInfo = Object.assign({}, writeInfo);
 
     const {
       othersCardPositive,
@@ -297,9 +314,9 @@ export default defineComponent({
       outHosTime,
       isSelected,
       feedback,
-    } = writeInfo;
+    } = newWriteInfo;
 
-    const unitId = 11;
+    const { unitId } = requestParams;
     const curIndex = ref(isMyself);
 
     const steps = ref(defineSteps(!curIndex.value));
@@ -326,7 +343,32 @@ export default defineComponent({
       show: false,
       typeTime: 'inHosTime',
       curDate: new Date(),
+      newWriteInfoList: newWriteInfo,
     });
+
+    watch(
+      () => writeInfo,
+      (cur, prev) => {
+        state.othersCardReverse = cur.othersCardReverse;
+        state.othersCardPositive = cur.othersCardPositive;
+        state.othersCardHand = cur.othersCardHand;
+        state.patientCardReverse = cur.patientCardReverse;
+        state.othersCardId = cur.othersCardId;
+        state.othersPhone = cur.othersPhone;
+        state.othersRelation = cur.othersRelation;
+        state.patientCardPositive = cur.patientCardPositive;
+        state.patientCardId = cur.patientCardId;
+        state.patientPhone = cur.patientPhone;
+        state.patientName = cur.patientName;
+        state.hospitalName = cur.hospitalName;
+        state.inHosTime = cur.inHosTime;
+        state.outHosTime = cur.outHosTime;
+        state.feedback = cur.feedback;
+      },
+      {
+        deep: true,
+      }
+    );
 
     const handleTabsItem = (i) => {
       curIndex.value = i;
@@ -402,6 +444,7 @@ export default defineComponent({
 
     // 上传被委托人身份证正面
     const uploadOthersCardPositive = (file) => {
+      console.log(file);
       uploadRequestFunc(file, 'othersCardPositive');
     };
 
@@ -457,9 +500,11 @@ export default defineComponent({
         commit('changeApplyRecordId', res.data);
       }
       commit('changeWriteInfo', toRaw(state));
-
-      const nextPath = curIndex.value === 1 ? '/signture' : '/copy';
-      router.push(nextPath);
+      Toast.clear();
+      setTimeout(() => {
+        const nextPath = curIndex.value === 1 ? '/signture' : '/copy';
+        router.push(nextPath);
+      });
     };
     const handleSave = async () => {
       const data = saveData();

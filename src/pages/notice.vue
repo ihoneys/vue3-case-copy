@@ -18,6 +18,8 @@ import { useRouter } from 'vue-router';
 import { getHospitalConfigNotice } from '@/service/api';
 
 import BottomButton from '@/components/bottom-button/Index.vue';
+import { useStore } from 'vuex';
+import { getRequestParams } from '../store/getters';
 
 const buttonContext = [
   {
@@ -36,14 +38,21 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter();
+    const { getters } = useStore();
+    const { getRequestParams: requestParams } = getters;
+    const { unitId } = requestParams;
     const content = ref<string>('');
     onMounted(async () => {
-      const unitId = 11;
       const { data } = await getHospitalConfigNotice(unitId);
       content.value = data;
     });
     const handleNext = () => {
-      router.push('/write');
+      router.push({
+        name: 'write',
+        query: {
+          recordId: '10',
+        },
+      });
     };
     return {
       buttonContext,

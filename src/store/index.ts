@@ -31,6 +31,22 @@ interface StateInterface {
     copyPageData: CurCopyData,
 }
 const state = {
+    applyRecordId: 1064,
+    currentAddress: "",
+    updateAddress: {
+        user: '',
+        phone: '',
+        area: '',
+        address: '',
+        defaultChecked: false,
+        id: '',
+    },
+    isTake: "1", // 1快递 2 院内自取
+    requestParams: {
+        userId: 11,
+        openId: 11,
+        unitId: 11,
+    },
     writeInfo: {
         isMyself: 0,
         othersCardPositive: [],
@@ -52,15 +68,13 @@ const state = {
         feedback: '',
         typeTime: 'inHosTime',
     },
-    applyRecordId: null,
-    currentAddress: "",
-    isTake: "1", // 1快递 2 院内自取
     copyPageData: {
-        printNums: 0,
+        printNums: 1,
         insuranceLocation: "",
-        copyContent: "",
-        copyPurpose: ""
+        copyContent: [],
+        copyPurpose: []
     },
+    signImage: ""
 }
 
 export default createStore({

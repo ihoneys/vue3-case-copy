@@ -34,7 +34,7 @@ const closeLoading = () => {
 const hideLoading = debounce(() => {
   loadingInstance.clear()
   loadingInstance = null
-}, 300, true)
+}, 0, true)
 
 const instance = axios.create({
   baseURL: BASE_URL,
@@ -56,19 +56,21 @@ instance.interceptors.request.use((config: AxiosRequestConfig) => {
   if (config.url?.includes('/file/upload')) {
     config.headers['Content-Type'] = 'multipart/form-data'
   }
-  console.log(9999)
   return config;
 }, err => {
   closeLoading()
   return Promise.reject(err)
 });
 
-instance.interceptors.response.use(res => {
+instance.interceptors.response.use((res: any) => {
   clearInterval(promiseTimeout)
   closeLoading()
-  return res.data;
+  if (res.data.returnCode === 0) {
+    return res.data;
+  } else {
+    return Promise.reject(res.data.returnMsg)
+  }
 }, err => {
-  console.log(1000)
   closeLoading()
   if (err && err.response) {
     switch (err.response.status) {
