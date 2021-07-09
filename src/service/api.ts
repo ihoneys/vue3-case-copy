@@ -70,6 +70,7 @@ export const storageApplyRecord = (data) => {
     })
 }
 
+// 根据id获取申请记录详情
 export const getApplyRecordDetail = (recordId) => {
     return request({
         method: "get",
@@ -153,6 +154,52 @@ export const getExpressCompany = (unitId) => {
         }
     })
 }
+
+// 保存领取方式
+export const saveMailingData = (data) => {
+    return request({
+        method: "post",
+        url: `/collectionMethod/save`,
+        data
+    })
+}
+
+// 取消申请
+export const cancelApply = (data) => {
+    return request({
+        method: "put",
+        url: `/applyRecord/cancelApply`,
+        params: data
+    })
+}
+
+
+// 获取预交费用
+export const getPrepaidFee = (unitId) => {
+    return request({
+        method: "get",
+        url: `/configItem/getPrepaidFeesByUnitId`,
+        params: {
+            unitId
+        }
+    })
+}
+
+// 记录列表
+export const getRecordList = (unitId) => {
+    return request({
+        method: "get",
+        url: `/applyRecord/getApplyRecordList`,
+        params: {
+            unitId
+        }
+    })
+}
+
+
+
+
+
 
 
 

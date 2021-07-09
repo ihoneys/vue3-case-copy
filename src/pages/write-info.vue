@@ -134,6 +134,13 @@
         </div>
         <van-field v-model="patientPhone" placeholder="请输入患者手机号" />
       </li>
+       <li class="column-item">
+        <div class="column-item-left">
+          <span class="label-icon">*</span>
+          <span>住院号</span>
+        </div>
+        <van-field v-model="hosNo" placeholder="请输入患者住院号" />
+      </li>
     </ul>
     <div class="record-header headerline">住院记录</div>
     <div class="wrapper-record">
@@ -239,7 +246,7 @@ import BottomButton from '@/components/bottom-button/Index.vue';
 import HeaderSteps from '@/components/steps/Index.vue';
 import IYRadio from '@/components/radio/Index.vue';
 
-import { defineSteps, isObjEmpty } from '../utils/utils';
+import { defineSteps, getYearsMonthDay, isObjEmpty } from '../utils/utils';
 
 import {
   uploadImage,
@@ -314,6 +321,7 @@ export default defineComponent({
       outHosTime,
       isSelected,
       feedback,
+      hosNo
     } = newWriteInfo;
 
     const { unitId } = requestParams;
@@ -335,6 +343,7 @@ export default defineComponent({
       patientPhone, // 患者手机号
       patientName,
       hospitalName, // 院区
+      hosNo,
       inHosTime, // 入院时间
       outHosTime, // 出院时间
       isSelected, // 是否勾选
@@ -344,6 +353,7 @@ export default defineComponent({
       typeTime: 'inHosTime',
       curDate: new Date(),
       newWriteInfoList: newWriteInfo,
+      submissionDate: ''
     });
 
     watch(
@@ -364,6 +374,7 @@ export default defineComponent({
         state.inHosTime = cur.inHosTime;
         state.outHosTime = cur.outHosTime;
         state.feedback = cur.feedback;
+        state.hosNo = cur.hosNo
       },
       {
         deep: true,
@@ -469,7 +480,7 @@ export default defineComponent({
           state.patientCardReverse.length > 0 &&
           state.patientCardReverse[0].url,
         patientIdCardNo: state.patientCardId,
-        patientHosCardNo: '',
+        patientHosCardNo: state.hosNo,
         inHosTime: state.inHosTime,
         outHosTime: state.outHosTime,
         inHosArea: state.hospitalName,
@@ -499,6 +510,8 @@ export default defineComponent({
       if (res.data) {
         commit('changeApplyRecordId', res.data);
       }
+      // 提交成功时间
+      state.submissionDate = getYearsMonthDay(true)
       commit('changeWriteInfo', toRaw(state));
       Toast.clear();
       setTimeout(() => {

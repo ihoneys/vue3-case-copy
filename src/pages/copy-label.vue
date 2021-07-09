@@ -8,7 +8,7 @@
     <div class="location-wrapper">
       <div>保险所在地</div>
       <div class="selected" @click="show = true">
-        <span>{{ insuranceLocation ? insuranceLocation : "请选择" }}</span>
+        <span>{{ insuranceLocation ? insuranceLocation : '请选择' }}</span>
         <img class="next-icon" src="@/assets/img/next.png" alt="" />
       </div>
     </div>
@@ -84,8 +84,7 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const { getters, commit } = useStore()
-    const { getIsMyself: isMyself, getCopyPageData: copyPageData, getRequestParams: requestParams, getApplyRecordId: applyId
-    } = getters
+    const { getIsMyself: isMyself, getCopyPageData: copyPageData, getRequestParams: requestParams, getApplyRecordId: applyId, getCopyDialog: copyDialog } = getters
 
     const { unitId } = requestParams
     const { copyContent, copyPurpose, printNums, insuranceLocation } = copyPageData
@@ -123,21 +122,25 @@ export default defineComponent({
       console.log(res)
     }
 
-    setTimeout(() => {
-      Dialog.confirm({
-        title: "复印用途说明",
-        message: "如不清楚复印用途所需的资料， 请咨询病区医院或对应的报销机构。",
-        confirmButtonText: "知道了",
-        showCancelButton: false,
-        confirmButtonColor: "#00C6B8"
-      })
-    }, 300)
+    if (copyDialog) {
+      setTimeout(() => {
+        Dialog.confirm({
+          title: "复印用途说明",
+          message: "如不清楚复印用途所需的资料， 请咨询病区医院或对应的报销机构。",
+          confirmButtonText: "知道了",
+          showCancelButton: false,
+          confirmButtonColor: "#00C6B8",
+        }).then(() => {
+          commit("changeCopyDialog")
+        })
+      }, 300)
+
+    }
 
     onMounted(() => {
       initLabelData()
       getCopyCotent()
     })
-
 
     const confirm = (location) => {
       let codeStr = ""

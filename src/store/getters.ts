@@ -10,3 +10,5 @@ export const getSignImage = state => state.signImage
 export const getApplyRecordId = state => state.applyRecordId
 export const getRequestParams = state => state.requestParams
 export const getUpdateAddress = state => state.updateAddress
+export const getMailingAddress = state => state.mailing
+export const getCopyDialog = state => state.copyDialog

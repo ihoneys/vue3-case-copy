@@ -16,12 +16,16 @@
           <van-radio name="2">到院自取</van-radio>
         </van-radio-group>
       </li>
-      <li class="column-flex" v-if="checked === '1'">
+      <li class="column-flex" v-if="checked === '1'" @click="show = true">
         <div class="column-flex-left">
           <span class="label-icon">*</span>
           <span>快递公司</span>
         </div>
-        <div class="pd-r-15">{{expressCompany}}</div>
+        <!-- <div class="pd-r-15">{{ expressCompany }}</div> -->
+        <div class="selected" style="padding-right: 0.08rem">
+          <span>{{ expressCompany ? expressCompany : '请选择快递公司' }}</span>
+          <img class="next-icon" src="@/assets/img/next.png" alt="" />
+        </div>
       </li>
       <li class="column-flex" v-if="checked === '1'" @click="handleAddress">
         <div class="column-flex-left">
@@ -29,7 +33,7 @@
           <span>邮寄地址</span>
         </div>
         <div class="selected" style="padding-right: 0.08rem">
-          <span>{{ currentAddress ? currentAddress : '请选择' }}</span>
+          <span>{{ currentAddress ? currentAddress : '请选择地址' }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </li>
@@ -51,6 +55,14 @@
         </p>
       </div>
     </ul>
+    <van-popup v-model:show="show" position="bottom" :style="{ height: '30%' }">
+      <van-picker
+        title="选择快递公司"
+        :columns="columns"
+        @confirm="confirm"
+        @cancel="show = !show"
+      />
+    </van-popup>
     <BottomButton
       :isSingle="false"
       :buttonContext="buttonContext"
@@ -68,8 +80,8 @@ import { useRouter } from 'vue-router';
 import HeaderSteps from '@/components/steps/Index.vue';
 import BottomButton from '@/components/bottom-button/Index.vue';
 
-import { defineSteps } from '../utils/utils';
-import { getExpressCompany } from '@/service/api';
+import { defineSteps, isObjEmpty } from '../utils/utils';
+import { getExpressCompany, saveMailingData } from '@/service/api';
 
 const buttonContext = [
   {
@@ -90,19 +102,30 @@ export default defineComponent({
     BottomButton,
   },
   setup() {
-    const { getters, dispatch } = useStore();
+    const { getters, dispatch, commit } = useStore();
     const router = useRouter();
 
     const {
       getIsMyself,
-      getCurrentAddress,
-      getIsTake,
       getRequestParams: requestParams,
+      getMailingAddress: mailingObject,
+      getUpdateAddress: addressInfo,
+      changeApplyRecordId: recordId,
     } = getters;
+
     const { unitId } = requestParams;
-    console.log(getters.getIsMyself);
-    const checked = ref<String>(getIsTake);
-    const expressCompany = ref("")
+    const {
+      way,
+      mailingAddress,
+      expressCompany: expCompany,
+      addressId,
+    } = mailingObject;
+
+    const checked = ref(way);
+    const expressCompany = ref(expCompany);
+    console.log(expressCompany.value, 'expressCompany65666');
+    const columns = ref([]);
+    const show = ref(false);
 
     const watchChange = (val) => {
       checked.value = val;
@@ -110,8 +133,13 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      const res = await getExpressCompany(unitId);
-      console.log(res)
+      const { data } = await getExpressCompany(unitId);
+
+      if (!isObjEmpty(data)) {
+        for (const key in data) {
+          columns.value.push(data[key]);
+        }
+      }
     });
 
     const handleAddress = () => {
@@ -119,24 +147,57 @@ export default defineComponent({
     };
 
     const handleNext = () => {
+      commitChangeMailingAddress();
       router.push('/payOrder');
     };
 
+    const nextSaveData = async () => {
+      const postData = {
+        addressId,
+        applyId: recordId,
+        collectionMethod: checked.value,
+        expressAddress: mailingAddress,
+        expressCompany: expressCompany.value,
+        // pickUpAddress:
+      };
+      const res = await saveMailingData(postData);
+      console.log(res);
+    };
+
     const handlePrev = () => {
+      commitChangeMailingAddress();
       router.push('/copy');
+    };
+
+    const commitChangeMailingAddress = () => {
+      console.log(expressCompany.value);
+      commit('changeMailingAddress', {
+        addressId,
+        way: checked.value,
+        expressCompany: expressCompany.value,
+        mailingAddress,
+      });
+    };
+
+    const confirm = (val) => {
+      expressCompany.value = val;
+      commit('changeExpressCompany', val);
+      show.value = false;
     };
     return {
       steps: defineSteps(!getIsMyself),
-      show: false,
+      show,
+      columns,
       checked,
-      currentAddress: getCurrentAddress,
+      currentAddress: mailingAddress,
       watchChange,
       handleAddress,
       buttonContext,
       handleNext,
       handlePrev,
       currentIndex: !getIsMyself ? 1 : 2,
-      expressCompany
+      expressCompany,
+      confirm,
     };
   },
 });

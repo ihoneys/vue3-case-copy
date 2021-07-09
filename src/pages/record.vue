@@ -7,7 +7,7 @@
       @load="onLoad"
     >
       <div class="record-column" v-for="(item, i) in list" :key="i">
-        <ul class="column-list">
+        <ul class="column-list" @click="handleItem(item)">
           <li>
             <div>申请人：{{ item.name }}</div>
             <div :style="{ color: statusObj[item.orderStatus].color }">
@@ -49,61 +49,63 @@ let list: Array<any> = [];
 const mockData = () => {
   return Array.from({ length: 50 }).forEach((item, index) => {
     list.push({
-      name: "李米" + index,
+      name: '李米' + index,
       orderStatus: Math.floor(Math.random() * 10) + 1,
-      patientName: "小米" + index,
-      date: "2021-04-20 22:4",
-      treatmentDate: "2021-04-20",
+      patientName: '小米' + index,
+      date: '2021-04-20 22:4',
+      treatmentDate: '2021-04-20',
     });
   });
 };
 mockData();
-import { defineComponent, reactive, toRefs } from "vue";
+import { defineComponent, reactive, toRefs } from 'vue';
+import { useRouter } from 'vue-router';
 const statusObj = {
   1: {
-    color: "#FF9F4F",
-    name: "暂存",
+    color: '#FF9F4F',
+    name: '暂存',
   },
   2: {
-    color: "#FF9F4F",
-    name: "待支付",
+    color: '#FF9F4F',
+    name: '待支付',
   },
   3: {
-    color: "#FF9F4F",
-    name: "已取消",
+    color: '#FF9F4F',
+    name: '已取消',
   },
   4: {
-    color: "#FF9F4F",
-    name: "待审核",
+    color: '#FF9F4F',
+    name: '待审核',
   },
   5: {
-    color: "#5ACF83",
-    name: "审核通过",
+    color: '#5ACF83',
+    name: '审核通过',
   },
   6: {
-    color: "#FA5151",
-    name: "审核失败",
+    color: '#FA5151',
+    name: '审核失败',
   },
   7: {
-    color: "#FA5151",
-    name: "审核失败",
+    color: '#FA5151',
+    name: '审核失败',
   },
   8: {
-    color: "#00C6B8",
-    name: "待收货",
+    color: '#00C6B8',
+    name: '待收货',
   },
   9: {
-    color: "#00C6B8",
-    name: "待自提",
+    color: '#00C6B8',
+    name: '待自提',
   },
   10: {
-    color: "#00C6B8",
-    name: "已收货",
+    color: '#00C6B8',
+    name: '已收货',
   },
 };
 export default defineComponent({
-  name: "App",
+  name: 'App',
   setup() {
+    const router = useRouter();
     const state = reactive({
       loading: false,
       finished: false,
@@ -116,11 +118,14 @@ export default defineComponent({
       setTimeout(() => {
         for (let i = 0; i < 10; i++) {
           state.list.push({
-            name: "李米" + i,
+            name: '李米' + i,
             orderStatus: Math.floor(Math.random() * 10) + 1,
-            patientName: "小米" + i,
-            date: "2021-04-20 22:4",
-            treatmentDate: "2021-04-20",
+            patientName: '小米' + i,
+            date: '2021-04-20 22:4',
+            treatmentDate: '2021-04-20',
+            id:
+              (Math.floor(Math.random() * 10) + 1) *
+              Math.floor(Math.random() * 10),
           });
         }
 
@@ -133,10 +138,22 @@ export default defineComponent({
         }
       }, 1000);
     };
+
+    const handleItem = ({ id, status }) => {
+      console.log(id);
+      router.push({
+        name: 'detail',
+        query: {
+          id,
+          status,
+        },
+      });
+    };
     return {
       ...toRefs(state),
       statusObj,
-      onLoad
+      onLoad,
+      handleItem,
     };
   },
 });

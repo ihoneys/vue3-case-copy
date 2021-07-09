@@ -33,6 +33,8 @@ interface StateInterface {
 const state = {
     applyRecordId: 1064,
     currentAddress: "",
+    signImage: "",
+    copyDialog: true,
     updateAddress: {
         user: '',
         phone: '',
@@ -41,7 +43,6 @@ const state = {
         defaultChecked: false,
         id: '',
     },
-    isTake: "1", // 1快递 2 院内自取
     requestParams: {
         userId: 11,
         openId: 11,
@@ -52,21 +53,23 @@ const state = {
         othersCardPositive: [],
         othersCardReverse: [], // 反面
         othersCardHand: [], // 手持
-        othersName: '',
+        othersName: '', // 被委托人姓名
         othersCardId: '', // 身份号
         othersPhone: '', // 电话号码
         othersRelation: '', // 与患者关系
         patientCardPositive: [], //患者身份证,
         patientCardReverse: [], //患者反面
-        patientCardId: '',
+        patientCardId: '', // 换证身份证
         patientPhone: '', // 患者手机号
-        patientName: '',
+        patientName: '', // 患者姓名
         hospitalName: '', // 院区
-        inHosTime: "", // 入院时间
-        outHosTime: "", // 出院时间
+        hosNo: '', // 住院号
+        inHosTime: '', // 入院时间
+        outHosTime: '', // 出院时间
         isSelected: false, // 是否勾选
-        feedback: '',
+        feedback: '', // 反馈
         typeTime: 'inHosTime',
+        submissionDate: '',
     },
     copyPageData: {
         printNums: 1,
@@ -74,7 +77,12 @@ const state = {
         copyContent: [],
         copyPurpose: []
     },
-    signImage: ""
+    mailing: {
+        way: '1',// 1邮寄到付
+        addressId: null,
+        expressCompany: "",
+        mailingAddress: "",
+    }
 }
 
 export default createStore({

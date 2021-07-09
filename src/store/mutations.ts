@@ -4,9 +4,6 @@ const mutations = {
     changeIsMyself(state, status) {
         state.writeInfo.isMyself = status
     },
-    changeCurrentAddress(state, value) {
-        state.currentAddress = value
-    },
     changeIsTake(state, way) {
         state.isTake = way
     },
@@ -58,6 +55,21 @@ const mutations = {
         for (const key in addressInfo) {
             state.updateAddress[key] = addressInfo[key]
         }
+    },
+    changeMailingAddress(state, obj) {
+        for (const key in obj) {
+            state.mailing[key] = obj[key]
+        }
+    },
+    changeCurrentAddressAndId(state, { addressId, currentAddress }) {
+        state.mailing.addressId = addressId
+        state.mailing.mailingAddress = currentAddress
+    },
+    changeExpressCompany(state, value) {
+        state.mailing.expressCompany = value
+    },
+    changeCopyDialog(state) {
+        state.copyDialog = false
     }
 }
 

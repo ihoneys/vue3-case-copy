@@ -52,12 +52,14 @@ export const debounce = (func, wait, immediate) => {
     }
 }
 
-export function getYearsMonthDay(): string {
+export function getYearsMonthDay(isComplete = false): string {
     function addDateZero(num) {
         return num < 10 ? '0' + num : num
     }
     const d = new Date()
-    const yearsMonthDay = `${d.getFullYear()}年${addDateZero(d.getMonth() + 1)}月${addDateZero(d.getDate())}日`
-        
+    let yearsMonthDay = `${d.getFullYear()}年${addDateZero(d.getMonth() + 1)}月${addDateZero(d.getDate())}日`
+    if(isComplete) {
+        yearsMonthDay =  `${yearsMonthDay} ${addDateZero(d.getHours())}:${addDateZero(d.getMinutes())}:${addDateZero(d.getSeconds())}`
+    }
     return yearsMonthDay
 }

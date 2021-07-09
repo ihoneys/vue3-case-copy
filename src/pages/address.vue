@@ -4,7 +4,7 @@
       class="address-li"
       v-for="(item, i) in addressList"
       :key="i"
-      @click="handleItem(item.address, item.addressDetail)"
+      @click="handleItem(item)"
     >
       <div class="address-user">
         <div class="address-flex">
@@ -71,21 +71,25 @@ export default defineComponent({
     }
     onMounted(getAddressListRequest)
 
-    const handleItem = (address, addressDetail) => {
-      dispatch("changeCurrentAddressAction", address + addressDetail)
+    const handleItem = (item) => {
+      commit("changeCurrentAddressAndId", { addressId: item.id, currentAddress: item.address + item.addressDetail })
       router.go(-1)
     }
     const handleAdd = () => {
       router.push("/addAddress")
     }
-    const editAddress = ({ consigneeName, phone, isDefaultAddress, address, addressDetail, id }) => {
-      commit("changeUpdateAddress", { user: consigneeName, phone, defaultChecked: isDefaultAddress, address: addressDetail, area: address, id })
+    const editAddress = (item) => {
+      commitUpdateAddress(item)
       router.push({
         name: "addAddress",
         query: {
           type: "edit"
         }
       })
+    }
+
+    const commitUpdateAddress = ({ consigneeName, phone, isDefaultAddress, address, addressDetail, id }) => {
+      commit("changeUpdateAddress", { user: consigneeName, phone, defaultChecked: isDefaultAddress, address: addressDetail, area: address, id })
     }
     return {
       addressList,
