@@ -12,7 +12,7 @@
       <li class="column-item" @click="show = true">
         <div class="column-label">所在地区</div>
         <div class="selected" style="padding-right: 8px">
-          <span>{{ area ? area : ' 请选择省市区县、乡镇等' }}</span>
+          <span>{{ area ? area : " 请选择省市区县、乡镇等" }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </li>
@@ -56,6 +56,7 @@ import { saveOrUpdateAddress } from "@/service/api"
 
 import BottomButton from "@/components/bottom-button/Index.vue"
 import { Toast } from 'vant';
+import { checkPhone, createDialog } from '../utils/utils';
 
 
 
@@ -110,6 +111,7 @@ export default defineComponent({
 
 
     const handleBtn = async () => {
+      if(!validateFrom()) return
       const postData = {
         address: state.area,
         addressCode: areaCode,
@@ -130,6 +132,30 @@ export default defineComponent({
         })
       }
     }
+
+    const validateFrom = () => {
+      const rules = [{
+        text: "请输入收货人姓名！",
+        value: state.user,
+      }, {
+        text: "请输入正确手机号！",
+        value: !checkPhone(state.phone),
+      }, {
+        text: "请选择所在地区！",
+        value: state.area,
+      }, , {
+        text: "请输入详细地址",
+        value: state.address,
+      }]
+      const action = rules.filter(item => !item.value)
+      if (action.length) {        
+        createDialog(action[0].text)
+        return false
+      } else {
+        return true
+      }
+    }
+
 
     return {
       ...toRefs(state),

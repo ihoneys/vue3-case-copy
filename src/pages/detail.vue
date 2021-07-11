@@ -8,7 +8,7 @@
       <img class="count-icon" src="@/assets/img/count-down.png" alt="" />
       <div class="count-time">
         <span class="time">等待支付倒计时：</span>
-        <van-count-down :time="time">
+        <van-count-down :time="time" @finish="finishCountTime">
           <template #default="timeData">
             <span class="time" v-if="timeData.hours">{{ timeData.hours }}</span>
             <span class="time" v-if="timeData.hours">:</span>
@@ -32,7 +32,7 @@
     </div>
     <div class="apply-info-box" v-if="data.applyStatus !== 3">
       <h3 class="headerline">
-        {{ data.collectionMethod ? '领取信息' : '自提地址' }}
+        {{ data.collectionMethod ? "领取信息" : "自提地址" }}
       </h3>
       <div class="address-info">
         <img
@@ -52,37 +52,41 @@
       </div>
     </div>
     <template v-if="isShowBtn">
-      <BottomButton :isSingle="isSingle" :buttonContext="buttonContext" />
+      <BottomButton
+        :isSingle="isSingle"
+        @handleLeft="handleLeftBtn"
+        @handleDefault="handleDefaultBtn"
+        :buttonContext="buttonContext"
+      />
     </template>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, reactive, toRefs } from 'vue';
-import { useStore } from 'vuex';
+import { defineComponent, onMounted, reactive, toRefs } from "vue";
+import { useStore } from "vuex";
 
-import OrderSteps from '@/components/steps-order/Index.vue';
-import ApplyContent from '@/components/apply-info/Index.vue';
-import BottomButton from '@/components/bottom-button/Index.vue';
+import OrderSteps from "@/components/steps-order/Index.vue";
+import ApplyContent from "@/components/apply-info/Index.vue";
+import BottomButton from "@/components/bottom-button/Index.vue";
 
-import { getApplyRecordDetail } from '@/service/api';
-import { isObjEmpty } from '../utils/utils';
-import { stat } from 'fs';
-
+import { getApplyRecordDetail } from "@/service/api";
+import { isObjEmpty } from "../utils/utils";
+import { toPay,canleApply,resetWriteInfo,checkLogistics } from "@/utils/commonOrder";
 const buttonContext = [
   {
-    text: '去支付',
+    text: "去支付",
     styleBtn: {
-      background: '#FFAE17',
-      border: '1px solid #FFAE17',
-      color: '#fff',
+      background: "#FFAE17",
+      border: "1px solid #FFAE17",
+      color: "#fff",
     },
   },
-  { text: '取消申请', styleWidth: {} },
+  { text: "取消申请", styleWidth: {} },
 ];
 
 export default defineComponent({
-  name: 'detail',
+  name: "detail",
   components: {
     OrderSteps,
     ApplyContent,
@@ -94,13 +98,13 @@ export default defineComponent({
     const state = reactive({
       writeInfo: {},
       data: {
-        applyStatus: 3,
+        applyStatus: 2,
       },
       currentIndex: 0,
       isShowBtn: false,
       isSingle: false,
       isPass: false,
-      failReason: '审核失败',
+      failReason: "审核失败",
       buttonContext,
     });
     const getDetails = async () => {
@@ -127,10 +131,10 @@ export default defineComponent({
       //   state.data = data;
 
       // }
-      changeBtnIsShow(6);
-      changeIsSingleBtn(6);
-      changIsPassAndFailReason(6, '审核失败');
-      changeStepsCurrentIndex(6);
+      changeBtnIsShow(2);
+      changeIsSingleBtn(2);
+      changIsPassAndFailReason(2, "审核失败");
+      changeStepsCurrentIndex(2);
     };
 
     const changeStepsCurrentIndex = (status) => {
@@ -166,9 +170,9 @@ export default defineComponent({
     const changeIsSingleBtn = (status) => {
       const statusArr = [2, 8];
       const statusBtnText = {
-        4: '取消申请',
-        6: '补充资料',
-        5: '等待自提/收货',
+        4: "取消申请",
+        6: "补充资料",
+        5: "等待自提/收货",
       };
       // 是否显示单个
       state.isSingle = !statusArr.includes(status);
@@ -178,22 +182,76 @@ export default defineComponent({
       if (state.isSingle) {
         state.buttonContext.unshift();
         state.buttonContext[0].text = statusBtnText[status];
-        state.buttonContext[0].styleBtn.background = '#fff';
-        state.buttonContext[0].styleBtn.color = '#00C6B8';
-        state.buttonContext[0].styleBtn.border = '1px solid #00C6B8';
+        state.buttonContext[0].styleBtn.background = "#fff";
+        state.buttonContext[0].styleBtn.color = "#00C6B8";
+        state.buttonContext[0].styleBtn.border = "1px solid #00C6B8";
       } else {
         if (status === 9) {
-          state.buttonContext[0].styleBtn.background = '#00C6B8';
-          state.buttonContext[0].styleBtn.border = '1px solid #00C6B8';
+          state.buttonContext[0].styleBtn.background = "#00C6B8";
+          state.buttonContext[0].styleBtn.border = "1px solid #00C6B8";
         }
       }
     };
 
     onMounted(getDetails);
 
+    // 倒计时结束
+    const finishCountTime = () => {
+      console.log("倒计时结束--调用取消申请");
+      canleApply();
+    };
+
+    const confirmReceipt = () => {
+      console.log("确认收件了");
+    };
+
+    const strategyBtnLeft = {
+      2: canleApply,
+      8: checkLogistics,
+    };
+
+    const strategyBtnRight = {
+      2: toPay,
+      4: canleApply,
+      6: resetWriteInfo,
+      5: () => console.log("等待自提/收货"),
+      8: confirmReceipt,
+    };
+
+    const executeFunc = (executeObj = "right") => {
+      const {
+        data: { applyStatus },
+      } = state;
+      if (executeObj === "right") {
+        if (strategyBtnRight[applyStatus]) {
+          strategyBtnRight[applyStatus]();
+        } else {
+          console.log("状态出错！");
+        }
+      } else {
+        if (strategyBtnLeft[applyStatus]) {
+          strategyBtnLeft[applyStatus]();
+        } else {
+          console.log("状态出错！");
+        }
+      }
+    };
+
+    // 单个 或者 right
+    const handleDefaultBtn = () => {
+      executeFunc();
+    };
+
+    const handleLeftBtn = () => {
+      executeFunc("left");
+    };
+
     return {
       ...toRefs(state),
-      time: 290000,
+      handleDefaultBtn,
+      handleLeftBtn,
+      finishCountTime,
+      time: 2000,
     };
   },
 });

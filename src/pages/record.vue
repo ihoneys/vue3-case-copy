@@ -19,23 +19,27 @@
           <li>就诊时间：2021-04-20至2021</li>
         </ul>
         <div class="button-wrapper">
-          <button v-if="item.orderStatus === 2" class="button-item orange">
+          <button
+            v-if="item.orderStatus === 2"
+            class="button-item orange"
+            @click="toPayBtn"
+          >
             支付
           </button>
           <button v-else-if="item.orderStatus === 4" class="button-item black">
             取消订单
           </button>
           <template v-else-if="item.orderStatus === 6">
-            <button class="button-item black">取消订单</button>
-            <button class="button-item orange">补充资料</button>
+            <button class="button-item black" @click="canleOrderBtn">取消订单</button>
+            <button class="button-item orange" @click="handleSupplement">补充资料</button>
           </template>
-          <button v-else-if="item.orderStatus === 8" class="button-item orange">
+          <button v-else-if="item.orderStatus === 8" class="button-item orange" @click="handleLogistics">
             查看物流
           </button>
-          <button v-else-if="item.orderStatus === 9" class="button-item black">
+          <button v-else-if="item.orderStatus === 9" class="button-item black" @click="handleTakeNothing">
             查看自提点
           </button>
-          <button v-else-if="item.orderStatus === 10" class="button-item black">
+          <button v-else-if="item.orderStatus === 10" class="button-item black" @click="handleDetail">
             查看详情
           </button>
         </div>
@@ -49,61 +53,68 @@ let list: Array<any> = [];
 const mockData = () => {
   return Array.from({ length: 50 }).forEach((item, index) => {
     list.push({
-      name: '李米' + index,
+      name: "李米" + index,
       orderStatus: Math.floor(Math.random() * 10) + 1,
-      patientName: '小米' + index,
-      date: '2021-04-20 22:4',
-      treatmentDate: '2021-04-20',
+      patientName: "小米" + index,
+      date: "2021-04-20 22:4",
+      treatmentDate: "2021-04-20",
     });
   });
 };
 mockData();
-import { defineComponent, reactive, toRefs } from 'vue';
-import { useRouter } from 'vue-router';
+import { defineComponent, reactive, toRefs } from "vue";
+import { useRouter } from "vue-router";
+
+import {
+  toPay,
+  canleApply,
+  resetWriteInfo,
+  checkLogistics,
+} from "@/utils/commonOrder";
 const statusObj = {
   1: {
-    color: '#FF9F4F',
-    name: '暂存',
+    color: "#FF9F4F",
+    name: "暂存",
   },
   2: {
-    color: '#FF9F4F',
-    name: '待支付',
+    color: "#FF9F4F",
+    name: "待支付",
   },
   3: {
-    color: '#FF9F4F',
-    name: '已取消',
+    color: "#FF9F4F",
+    name: "已取消",
   },
   4: {
-    color: '#FF9F4F',
-    name: '待审核',
+    color: "#FF9F4F",
+    name: "待审核",
   },
   5: {
-    color: '#5ACF83',
-    name: '审核通过',
+    color: "#5ACF83",
+    name: "审核通过",
   },
   6: {
-    color: '#FA5151',
-    name: '审核失败',
+    color: "#FA5151",
+    name: "审核失败",
   },
   7: {
-    color: '#FA5151',
-    name: '审核失败',
+    color: "#FA5151",
+    name: "审核失败",
   },
   8: {
-    color: '#00C6B8',
-    name: '待收货',
+    color: "#00C6B8",
+    name: "待收货",
   },
   9: {
-    color: '#00C6B8',
-    name: '待自提',
+    color: "#00C6B8",
+    name: "待自提",
   },
   10: {
-    color: '#00C6B8',
-    name: '已收货',
+    color: "#00C6B8",
+    name: "已收货",
   },
 };
 export default defineComponent({
-  name: 'App',
+  name: "App",
   setup() {
     const router = useRouter();
     const state = reactive({
@@ -118,11 +129,11 @@ export default defineComponent({
       setTimeout(() => {
         for (let i = 0; i < 10; i++) {
           state.list.push({
-            name: '李米' + i,
+            name: "李米" + i,
             orderStatus: Math.floor(Math.random() * 10) + 1,
-            patientName: '小米' + i,
-            date: '2021-04-20 22:4',
-            treatmentDate: '2021-04-20',
+            patientName: "小米" + i,
+            date: "2021-04-20 22:4",
+            treatmentDate: "2021-04-20",
             id:
               (Math.floor(Math.random() * 10) + 1) *
               Math.floor(Math.random() * 10),
@@ -140,20 +151,49 @@ export default defineComponent({
     };
 
     const handleItem = ({ id, status }) => {
-      console.log(id);
       router.push({
-        name: 'detail',
+        name: "detail",
         query: {
           id,
           status,
         },
       });
     };
+    const toPayBtn = () => {
+      toPay();
+    };
+
+    const canleOrderBtn = () => {
+      canleApply()
+    }
+
+    // 补充资料
+    const handleSupplement = () => {
+      resetWriteInfo()
+    }
+
+    const handleLogistics = () => {
+      checkLogistics()
+    }
+
+    const handleTakeNothing = () => {
+      console.log("查看自提地点")
+    }
+
+    const handleDetail = () => {
+      console.log("查看详情")
+    }
     return {
       ...toRefs(state),
       statusObj,
       onLoad,
       handleItem,
+      toPayBtn,
+      canleOrderBtn,
+      handleSupplement,
+      handleLogistics,
+      handleTakeNothing,
+      handleDetail,
     };
   },
 });

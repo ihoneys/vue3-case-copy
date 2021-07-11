@@ -9,7 +9,9 @@ export default defineConfig({
         javascriptEnabled: true,
         // 覆盖样式变量
         modifyVars: {
-          'blue': '#00C6B8'
+          'blue': '#00C6B8',
+          'gray-7' : '#333333',
+          'gray-4' : '#00C6B8',
         },
       },
     },

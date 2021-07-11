@@ -70,6 +70,11 @@ const mutations = {
     },
     changeCopyDialog(state) {
         state.copyDialog = false
+    },
+    changeRequestParams(state, { unitId = 11, openId = null, userId = null }) {
+        state.requestParams.unitId = unitId
+        state.requestParams.openId = openId
+        state.requestParams.userId = userId
     }
 }
 

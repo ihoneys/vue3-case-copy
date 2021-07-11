@@ -16,19 +16,11 @@
       </ul>
       <div class="button-wrapper">
         <router-link to="/record" class="bottom-flex bottom-left">
-          <img
-            class="boottom-icon"
-            src="@/assets/img/record-icon.png"
-            alt=""
-          />
+          <img class="boottom-icon" src="@/assets/img/record-icon.png" alt="" />
           <div>申请记录</div>
         </router-link>
         <router-link to="/notice" class="bottom-flex bottom-right">
-          <img
-            class="boottom-icon"
-            src="@/assets/img/apply-icon.png"
-            alt=""
-          />
+          <img class="boottom-icon" src="@/assets/img/apply-icon.png" alt="" />
           <div>立即申请</div>
         </router-link>
       </div>
@@ -37,16 +29,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { defineComponent, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 
-import { entranceData } from '@/common/local-data';
-import { getHomeUnitConfig } from '@/service/api';
+import { entranceData } from "@/common/local-data";
+import { getHomeUnitConfig } from "@/service/api";
 
-import { isObjEmpty } from '@/utils/utils';
+import { isObjEmpty } from "@/utils/utils";
+import { getUrlParams } from "../utils/utils";
 export default defineComponent({
-  name: 'Home',
+  name: "Home",
   setup() {
+    const {commit}  = useStore()
     const router = useRouter();
     const listData = ref(entranceData);
     onMounted(async () => {
@@ -57,8 +52,14 @@ export default defineComponent({
         listData.value[2].content = data['contactMode'];
       }
     });
+
+    const query = getUrlParams();
+    if (!isObjEmpty(query)) {
+      commit("commit",query)
+    }
+
     const handleDefault = () => {
-      router.push('/notice');
+      router.push("/notice");
     };
 
     return {
@@ -72,7 +73,7 @@ export default defineComponent({
 .header-wrapper {
   height: 1.69rem;
   width: 375px;
-  background-image: url('../assets/img/enter-header.png');
+  background-image: url("../assets/img/enter-header.png");
   background-size: 100% 100%;
 }
 .content-wrapper {

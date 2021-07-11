@@ -14,6 +14,7 @@
     <van-button
       :style="buttonContext[0].styleBtn"
       @click="handleDefault"
+      native-type="submit"
       round
       plain
       type="primary"
@@ -24,19 +25,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
+
+import { debounce } from "@/utils/utils";
+
 export default defineComponent({
-  name: 'BottomButton',
+  name: "BottomButton",
   props: {
     buttonContext: {
       type: Array,
       default: () => [
         {
-          text: '下一步',
+          text: "下一步",
           styleBtn: {},
         },
         {
-          text: '下一步',
+          text: "下一步",
           styleBtn: {},
         },
       ],
@@ -47,12 +51,20 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    const handleDefault = () => {
-      emit('handleDefault');
-    };
-    const handleLeft = () => {
-      emit('handleLeft');
-    };
+    const handleDefault = debounce(
+      () => {
+        emit("handleDefault");
+      },
+      200,
+      true
+    );
+    const handleLeft = debounce(
+      () => {
+        emit("handleLeft");
+      },
+      200,
+      true
+    );
     return {
       isSingle: props.isSingle,
       buttonContext: props.buttonContext,
