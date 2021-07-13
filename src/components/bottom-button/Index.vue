@@ -25,22 +25,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, reactive, toRefs, watchEffect } from 'vue';
 
-import { debounce } from "@/utils/utils";
+import { debounce } from '@/utils/utils';
 
 export default defineComponent({
-  name: "BottomButton",
+  name: 'BottomButton',
   props: {
     buttonContext: {
       type: Array,
       default: () => [
         {
-          text: "下一步",
+          text: '下一步',
           styleBtn: {},
         },
         {
-          text: "下一步",
+          text: '下一步',
           styleBtn: {},
         },
       ],
@@ -51,23 +51,29 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
+    const state = reactive({
+      buttonContext: props.buttonContext,
+      isSingle:props.isSingle,
+    });
     const handleDefault = debounce(
       () => {
-        emit("handleDefault");
+        emit('handleDefault');
       },
       200,
       true
     );
+    watchEffect(() => {
+      state.buttonContext = props.buttonContext;
+    });
     const handleLeft = debounce(
       () => {
-        emit("handleLeft");
+        emit('handleLeft');
       },
       200,
       true
     );
     return {
-      isSingle: props.isSingle,
-      buttonContext: props.buttonContext,
+      ...toRefs(state),
       handleDefault,
       handleLeft,
     };

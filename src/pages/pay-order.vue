@@ -7,6 +7,7 @@
     <BottomButton
       :isSingle="false"
       @handleLeft="handleCanle"
+      @handleDefault="handleDefault"
       :buttonContext="buttonContext"
     />
   </div>
@@ -42,9 +43,15 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const { state, getters } = useStore()
-    const { getApplyRecordId: recordId, getNewWriteInfo: writeInfo, getRequestParams: requestParams } = getters
+    const { getApplyRecordId: recordId, getNewWriteInfo: writeInfo, getRequestParams: requestParams, getIsResetWrite: isResetWrite } = getters
     console.log(writeInfo, 'writeInfo')
 
+    let steps = ref(defineSteps(!state.writeInfo.isMyself))
+    if (isResetWrite) {
+      buttonContext[0].text = '重新提交'
+      steps.value[0].title = '补充资料'
+      steps.value[steps.value.length - 1].title = '重新提交';
+    }
     const fee = ref(null)
 
     onMounted(async () => {
@@ -65,13 +72,21 @@ export default defineComponent({
         })
       }
     }
+    const handleDefault = () => {
+      if(isResetWrite) {
+        console.log("去支付了")
+      } else {
+        console.log("重新提交成功")
+      }
+    }
     return {
-      seteps: defineSteps(!state.writeInfo.isMyself),
+      seteps: steps,
       currentIndex: !state.writeInfo.isMyself ? 2 : 3,
       buttonContext,
-      handleCanle,
       writeInfo,
-      fee
+      fee,
+      handleCanle,
+      handleDefault,
     }
   }
 });

@@ -1,5 +1,5 @@
 import { Dialog } from "vant";
-
+import CryptoJS from "crypto-js"
 export function isObjEmpty(obj: any): boolean {
     return (
         obj === undefined ||
@@ -36,7 +36,7 @@ export function defineSteps(isSpilce: boolean = false): any {
     }
 }
 
-export const debounce = (func: Function, wait: number, immediate: number): Function => {
+export const debounce = (func: Function, wait: number, immediate: boolean): Function => {
     // 设置定时器
     let timeout;
     return (...args) => {
@@ -83,18 +83,49 @@ export function createDialog(message: string): void {
 }
 
 export function getUrlParams(): any {
-    let hre = window.location.href
+    let hre = decodeURIComponent(window.location.href)
+     hre = hre.replace(/\s/g,"");
     let query = hre.split('?')[1]
     let obj = {}
     if (query) {
-      var queryParams = query.split('&')
-      if (!queryParams) return false
-      for (let i in queryParams) {
-        var typeArr = queryParams[i].split('=')
-        let key = typeArr[0]
-        let value = typeArr[1]
-        obj[key] = value
-      }
+        var queryParams = query.split('&')
+        if (!queryParams) return false
+        for (let i in queryParams) {
+            var typeArr = queryParams[i].split('=')
+            let key = typeArr[0]
+            let value = typeArr[1]
+            obj[key] = value
+        }
     }
     return obj
-  }
+}
+
+export function validateFunc(arr) {
+    const action = arr.filter((item) => !item.value);
+    if (action.length) {
+        createDialog(action[0].text);
+        return false;
+    } else {
+        return true;
+    }
+};
+
+
+export function aseDecrypt(encryptedStr) {
+    if (!encryptedStr) return
+    let key = '3CJQFPI8GDNV9RKZ';
+    key = CryptoJS.enc.Utf8.parse(key);
+    let base64 = CryptoJS.enc.Base64.parse(encryptedStr);
+    let src = CryptoJS.enc.Base64.stringify(base64);
+    let decrypt = CryptoJS.AES.decrypt(src, key, {
+        iv : [],
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7
+    });
+
+    let decryptedStr = decrypt.toString(CryptoJS.enc.Utf8);
+    return decryptedStr.toString();
+
+}
+
+

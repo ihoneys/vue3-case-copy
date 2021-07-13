@@ -49,9 +49,9 @@ instance.interceptors.request.use((config: AxiosRequestConfig) => {
   showLoading()
   // 2.某一些请求要求用户必须携带token, 如果没有携带, 那么直接跳转到登录页面
 
-  promiseTimeout = setInterval(() => {
-    return Promise.reject("请求超时")
-  }, TIMEOUT)
+  // promiseTimeout = setInterval(() => {
+  //   return Promise.reject("请求超时")
+  // }, TIMEOUT)
   // 3.params/data序列化的操作
   if (config.url?.includes('/file/upload')) {
     config.headers['Content-Type'] = 'multipart/form-data'
@@ -63,7 +63,7 @@ instance.interceptors.request.use((config: AxiosRequestConfig) => {
 });
 
 instance.interceptors.response.use((res: any) => {
-  clearInterval(promiseTimeout)
+  // clearInterval(promiseTimeout)
   closeLoading()
   if (res.data.returnCode === 0) {
     return res.data;

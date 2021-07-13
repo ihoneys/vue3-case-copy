@@ -38,7 +38,7 @@
             />
             <div class="card-name">上传身份证反面面</div>
           </div>
-          <div class="uploader-item">
+          <div class="uploader-item hand-img">
             <van-uploader
               max-count="1"
               v-model="othersCardHand"
@@ -78,7 +78,7 @@
         </div>
         <div class="selected" style="padding-right: 8px" @click="show = !show">
           <span>{{
-            othersRelation ? othersRelation : "请选择与患者关系"
+            othersRelation ? othersRelation : '请选择与患者关系'
           }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
@@ -101,7 +101,7 @@
             />
             <div class="card-name">上传身份证正面</div>
           </div>
-          <div class="uploader-item">
+          <div class="uploader-item reverse-img">
             <van-uploader
               max-count="1"
               :before-read="uploadPatientCardReverse"
@@ -177,7 +177,7 @@
           style="padding-right: 8px"
           @click="handleDischargeTime('inHosTime')"
         >
-          <span>{{ inHosTime ? inHosTime : "请选择入院时间" }}</span>
+          <span>{{ inHosTime ? inHosTime : '请选择入院时间' }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </div>
@@ -191,7 +191,7 @@
           style="padding-right: 8px"
           @click="handleDischargeTime('outHosTime')"
         >
-          <span>{{ outHosTime ? outHosTime : "请选择出院时间" }}</span>
+          <span>{{ outHosTime ? outHosTime : '请选择出院时间' }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </div>
@@ -245,13 +245,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, toRaw, toRefs, watch } from "vue";
-import { useStore } from "vuex";
-import { useRouter, useRoute } from "vue-router";
+import { defineComponent, reactive, ref, toRaw, toRefs, watch } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter, useRoute } from 'vue-router';
 
-import BottomButton from "@/components/bottom-button/Index.vue";
-import HeaderSteps from "@/components/steps/Index.vue";
-import IYRadio from "@/components/radio/Index.vue";
+import BottomButton from '@/components/bottom-button/Index.vue';
+import HeaderSteps from '@/components/steps/Index.vue';
+import IYRadio from '@/components/radio/Index.vue';
 
 import {
   defineSteps,
@@ -260,7 +260,8 @@ import {
   checkPhone,
   checkIdCard,
   createDialog,
-} from "../utils/utils";
+  validateFunc
+} from '../utils/utils';
 
 import {
   uploadImage,
@@ -268,25 +269,25 @@ import {
   saveApplyRecord,
   storageApplyRecord,
   getApplyRecordContext,
-} from "@/service/api";
-import { Dialog, Toast } from "vant";
+} from '@/service/api';
+import { Dialog, Toast } from 'vant';
 
-const tabsList = ["本人办理", "他人代办"];
-const columns = ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"];
+const tabsList = ['本人办理', '他人代办'];
+const columns = ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华'];
 
 const buttonContext = [
   {
-    text: "下一步",
+    text: '下一步',
     styleBtn: {
-      background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
-      boxShadow: "0px 4px 6px 0px rgba(0,155,143,0.17)",
-      color: "#fff",
+      background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
+      boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
+      color: '#fff',
     },
   },
-  { text: "暂存", styleWidth: {} },
+  { text: '暂存', styleWidth: {} },
 ];
 export default defineComponent({
-  name: "App",
+  name: 'App',
   components: {
     HeaderSteps,
     BottomButton,
@@ -306,10 +307,10 @@ export default defineComponent({
     } = getters;
 
     if (recordId) {
-      getApplyRecordContext(1064)
+      getApplyRecordContext(recordId)
         .then((result) => {
           console.log(result);
-          dispatch("changeStorageWriteInfoAction", result.data);
+          dispatch('changeStorageWriteInfoAction', result.data);
         })
         .catch((err) => {});
     }
@@ -337,7 +338,7 @@ export default defineComponent({
       hosNo,
     } = newWriteInfo;
 
-    const { unitId } = requestParams;
+    const { unitId, userId, openId } = requestParams;
     const curIndex = ref(isMyself);
 
     const steps = ref(defineSteps(!curIndex.value));
@@ -363,10 +364,10 @@ export default defineComponent({
       feedback,
       showDate: false,
       show: false,
-      typeTime: "inHosTime",
+      typeTime: 'inHosTime',
       curDate: new Date(),
       newWriteInfoList: newWriteInfo,
-      submissionDate: "",
+      submissionDate: '',
     });
 
     watch(
@@ -397,7 +398,7 @@ export default defineComponent({
     const handleTabsItem = (i) => {
       curIndex.value = i;
       steps.value = defineSteps(!i);
-      dispatch("changeIsMyselfAction", i);
+      dispatch('changeIsMyselfAction', i);
     };
 
     const handleDischargeTime = (type) => {
@@ -407,7 +408,7 @@ export default defineComponent({
     // 选择入出院时间
     const handelConfirmDate = (time) => {
       state.showDate = false;
-      if (state.typeTime === "inHosTime") {
+      if (state.typeTime === 'inHosTime') {
         state.inHosTime = timeFormat(time);
       } else {
         state.outHosTime = timeFormat(time);
@@ -419,7 +420,7 @@ export default defineComponent({
       const year = time.getFullYear();
       const month = time.getMonth() + 1;
       const day = time.getDate();
-      return year + "年" + month + "月" + day + "日";
+      return year + '年' + month + '月' + day + '日';
     };
 
     const confirmRelation = (val) => {
@@ -433,53 +434,53 @@ export default defineComponent({
 
     const uploadRequestFunc = (file, key) => {
       const fd = new FormData();
-      fd.append("file", file);
+      fd.append('file', file);
       uploadImage(unitId, fd)
         .then((res) => {
           const { data } = res;
           if (isObjEmpty(data)) {
-            createMessage("上传失败！");
+            createMessage('上传失败！');
             return false;
           } else {
-            console.log(state[key]);
-            state[key].push({
+            let list = state[key].slice();
+            list.push({
               url: res.data.url,
               isImage: true,
             });
+            state[key] = list;
             return true;
           }
         })
         .catch((err) => {
-          createMessage("上传失败！");
+          console.log(err);
+          createMessage('上传失败！');
           return false;
         });
     };
 
     // 上传患者证件
     const uploadPatientCardPositive = (file) => {
-      // uploadRequestFunc(file, "patientCardPositive");
-      return true;
+      uploadRequestFunc(file, 'patientCardPositive');
     };
 
     // 上传身份证反面
     const uploadPatientCardReverse = (file) => {
-      uploadRequestFunc(file, "patientCardReverse");
+      uploadRequestFunc(file, 'patientCardReverse');
     };
 
     // 上传被委托人身份证正面
     const uploadOthersCardPositive = (file) => {
-      console.log(file);
-      uploadRequestFunc(file, "othersCardPositive");
+      uploadRequestFunc(file, 'othersCardPositive');
     };
 
     // 上传被委托人身份证反面
     const uploadOthersCardReverse = (file) => {
-      uploadRequestFunc(file, "othersCardReverse");
+      uploadRequestFunc(file, 'othersCardReverse');
     };
 
     // 被委托人手持身份证
     const uploadOthersCardHand = (file) => {
-      uploadRequestFunc(file, "othersCardHand");
+      uploadRequestFunc(file, 'othersCardHand');
     };
 
     const saveData = () => {
@@ -499,6 +500,9 @@ export default defineComponent({
         inHosArea: state.hospitalName,
         applyType: !!curIndex,
         remark: state.feedback,
+        userId,
+        openId,
+        unitId,
       };
 
       const ohtersData = {
@@ -521,54 +525,62 @@ export default defineComponent({
       if (curIndex.value === 1) {
         if (!validateOthersFrom()) return;
       }
-      // const data = saveData();
-      // const res = await saveApplyRecord(data);
-      // if (res.data) {
-      //   commit("changeApplyRecordId", res.data);
-      // }
-      // // 提交成功时间
-      // state.submissionDate = getYearsMonthDay(true);
-      // commit("changeWriteInfo", toRaw(state));
-      // Toast.clear();
-      // setTimeout(() => {
-      //   const nextPath = curIndex.value === 1 ? "/signture" : "/copy";
-      //   router.push(nextPath);
-      // });
+      if (!state.isSelected) {
+        createDialog('请阅读并同意勾选！');
+        return;
+      }
+      const data = saveData();
+      const res = await saveApplyRecord(data);
+      if (res.data) {
+        commit('changeApplyRecordId', res.data);
+      }
+      // 提交成功时间
+      state.submissionDate = getYearsMonthDay(true);
+      commit('changeWriteInfo', toRaw(state));
+      Toast.clear();
+      setTimeout(() => {
+        const nextPath = curIndex.value === 1 ? '/signture' : '/copy';
+        router.push(nextPath);
+      });
     };
 
     const validatePatientFrom = () => {
       const patientRules = [
         {
-          value: !state.patientCardPositive.length,
-          text: "未上传患者身份证正面！",
+          value: state.patientCardPositive.length,
+          text: '未上传患者身份证正面！',
         },
         {
-          value: !state.patientCardReverse.length,
-          text: "未上传患者身份证反面！",
+          value: state.patientCardReverse.length,
+          text: '未上传患者身份证反面！',
         },
         {
-          value: !state.patientName.replace(/\s/g, ""),
-          text: "患者姓名不能为空！",
-        },
-        {
-          value: !checkPhone(state.patientPhone),
-          text: "患者手机号不正确！",
+          value: state.patientName.replace(/\s/g, ''),
+          text: '患者姓名不能为空！',
         },
         {
           value: !checkIdCard(state.patientCardId),
-          text: "患者身份证不正确",
+          text: '患者身份证不正确',
         },
         {
-          value: !state.hosNo.replace(/\s/g, ""),
-          text: "住院号为空！",
+          value: !checkPhone(state.patientPhone),
+          text: '患者手机号不正确！',
         },
         {
-          value: !state.inHosTime,
-          text: "请选择入院时间！",
+          value: state.hosNo.replace(/\s/g, ''),
+          text: '住院号为空！',
         },
         {
-          value: !state.outHosTime,
-          text: "请选择出院时间！",
+          value: state.hospitalName.replace(/\s/g, ''),
+          text: '请输入住院院区！',
+        },
+        {
+          value: state.inHosTime,
+          text: '请选择入院时间！',
+        },
+        {
+          value: state.outHosTime,
+          text: '请选择出院时间！',
         },
       ];
       return validateFunc(patientRules);
@@ -577,50 +589,42 @@ export default defineComponent({
     const validateOthersFrom = () => {
       const othersRules = [
         {
-          value: !state.othersCardPositive.length,
-          text: "未上传被委托人身份证正面！",
+          value: state.othersCardPositive.length,
+          text: '未上传被委托人身份证正面！',
         },
         {
-          value: !state.othersCardReverse.length,
-          text: "未上传被委托人身份证反面！",
+          value: state.othersCardReverse.length,
+          text: '未上传被委托人身份证反面！',
         },
         {
-          value: !state.othersCardHand.length,
-          text: "未上传被委托人手持身份证照",
+          value: state.othersCardHand.length,
+          text: '未上传被委托人手持身份证照',
         },
         {
-          value: !state.othersName.replace(/\s/g, ""),
-          text: "被委托人姓名不能为空！",
+          value: state.othersName.replace(/\s/g, ''),
+          text: '被委托人姓名不能为空！',
         },
         {
           value: !checkPhone(state.othersPhone),
-          text: "被委托人手机号填写不正确！",
+          text: '被委托人手机号填写不正确！',
         },
         {
           value: !checkIdCard(state.othersCardId),
-          text: "被委托人身份证不正确",
+          text: '被委托人身份证不正确',
         },
         {
-          value: !state.othersRelation.length,
-          text: "请选择与患者关系",
+          value: state.othersRelation,
+          text: '请选择与患者关系',
         },
       ];
       return validateFunc(othersRules);
     };
-    const validateFunc = (arr) => {
-      const action = arr.filter((item) => !item.value);
-      if (action.length) {
-        createDialog(action[0].text);
-        return false;
-      } else {
-        return true;
-      }
-    };
+
     const handleSave = async () => {
       const data = saveData();
       const res = await storageApplyRecord(data);
       if (res.data) {
-        commit("changeApplyRecordId", res.data);
+        commit('changeApplyRecordId', res.data);
       }
     };
 
@@ -701,9 +705,21 @@ export default defineComponent({
   .uploader-wrapper {
     display: flex;
     padding-right: 10px;
-    .positive-img{
+    .positive-img {
+      & :deep() .van-uploader__upload {
+        background-image: url('../assets/img/positive.png');
+        background-size: 100%;
+      }
+    }
+    .reverse-img{
        & :deep() .van-uploader__upload {
-        background-image: url("../assets/img/positive.png");
+        background-image: url('../assets/img/reverse.png');
+        background-size: 100%;
+      }
+    }
+    .hand-img {
+       & :deep() .van-uploader__upload {
+        background-image: url('../assets/img/hand.png');
         background-size: 100%;
       }
     }
@@ -714,8 +730,8 @@ export default defineComponent({
       display: flex;
       flex-direction: column;
       align-items: center;
-      
-       & :deep() .van-uploader__upload {
+
+      & :deep() .van-uploader__upload {
         width: 108px !important;
         height: 68px !important;
       }

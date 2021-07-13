@@ -29,37 +29,45 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { useStore } from "vuex";
+import { defineComponent, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
-import { entranceData } from "@/common/local-data";
-import { getHomeUnitConfig } from "@/service/api";
+import { entranceData } from '@/common/local-data';
+import { getHomeUnitConfig } from '@/service/api';
 
-import { isObjEmpty } from "@/utils/utils";
-import { getUrlParams } from "../utils/utils";
+import { isObjEmpty } from '@/utils/utils';
+import { getUrlParams, aseDecrypt } from '../utils/utils';
+
 export default defineComponent({
-  name: "Home",
+  name: 'Home',
   setup() {
-    const {commit}  = useStore()
+    const { commit } = useStore();
     const router = useRouter();
     const listData = ref(entranceData);
     onMounted(async () => {
-      const { data } = await getHomeUnitConfig(11);
-      if (!isObjEmpty(data)) {
-        listData.value[0].content = data['suitablePeople'];
-        listData.value[1].content = data['obtainMode'];
-        listData.value[2].content = data['contactMode'];
-      }
+      // const { data } = await getHomeUnitConfig(11);
+      // if (!isObjEmpty(data)) {
+      //   listData.value[0].content = data['suitablePeople'];
+      //   listData.value[1].content = data['obtainMode'];
+      //   listData.value[2].content = data['contactMode'];
+      // }
     });
 
     const query = getUrlParams();
+
     if (!isObjEmpty(query)) {
-      commit("commit",query)
+      let userInfo = aseDecrypt(query.userInfo);
+      userInfo = JSON.parse(userInfo)
+      let obj = {};
+      for (const key in userInfo) {
+        obj[key] = userInfo[key];
+      }
+      commit('changeRequestParams', obj);
     }
 
     const handleDefault = () => {
-      router.push("/notice");
+      router.push('/notice');
     };
 
     return {
@@ -73,7 +81,7 @@ export default defineComponent({
 .header-wrapper {
   height: 1.69rem;
   width: 375px;
-  background-image: url("../assets/img/enter-header.png");
+  background-image: url('../assets/img/enter-header.png');
   background-size: 100% 100%;
 }
 .content-wrapper {

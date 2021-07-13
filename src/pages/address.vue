@@ -25,7 +25,7 @@
       </div>
     </li>
   </ul>
-  <WithoutData :isShow="!!addressList.length" />
+  <WithoutData :isShow="!addressList.length" />
   <BottomButton :buttonContext="buttonContext" @handleDefault="handleAdd" />
 </template>
 

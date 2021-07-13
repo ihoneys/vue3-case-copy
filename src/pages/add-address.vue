@@ -2,7 +2,7 @@
   <div class="add-address-wrapper">
     <ul>
       <li class="column-item">
-        <div class="column-label">收货人人</div>
+        <div class="column-label">收货人</div>
         <van-field v-model="user" placeholder="请输入用户名" />
       </li>
       <li class="column-item">

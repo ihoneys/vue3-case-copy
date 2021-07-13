@@ -1,11 +1,9 @@
 <template>
   <div class="detail-wrapper">
-    <div class="background" v-if="data.applyStatus !== 3"></div>
-    <div
-      class="count-wrapper"
-      v-if="data.applyStatus === 2 && data.applyStatus !== 3"
-    >
+    <div class="background" v-if="computedBgc"></div>
+    <div class="count-wrapper" v-show="computedCountShow">
       <img class="count-icon" src="@/assets/img/count-down.png" alt="" />
+      <!-- <div v-if="showOverTime">申请超时未支付，已取消！</div> -->
       <div class="count-time">
         <span class="time">等待支付倒计时：</span>
         <van-count-down :time="time" @finish="finishCountTime">
@@ -19,20 +17,20 @@
         </van-count-down>
       </div>
     </div>
-    <template v-if="data.applyStatus !== 2 && data.applyStatus !== 3">
+    <template v-if="computedHeaderSteps">
       <OrderSteps
         :currentIndex="currentIndex"
         :isPass="isPass"
-        :statusCode="6"
+        :statusCode="data.applyStatus"
         :failReason="failReason"
       />
     </template>
     <div class="apply-info-box">
       <ApplyContent :applyInfo="writeInfo" :fee="data.prepaidFees" />
     </div>
-    <div class="apply-info-box" v-if="data.applyStatus !== 3">
+    <div class="apply-info-box">
       <h3 class="headerline">
-        {{ data.collectionMethod ? "领取信息" : "自提地址" }}
+        {{ data.collectionMethod ? '领取信息' : '自提地址' }}
       </h3>
       <div class="address-info">
         <img
@@ -48,10 +46,9 @@
           <p class="info-text">{{ data.address }}{{ data.addressDetail }}</p>
         </div>
         <div v-else>{{ data.pickUpAddress }}</div>
-        <img class="arrow-icon" src="@/assets/img/next.png" alt="next" />
       </div>
     </div>
-    <template v-if="isShowBtn">
+    <template v-if="computedShowBottomBtn(data.applyStatus)">
       <BottomButton
         :isSingle="isSingle"
         @handleLeft="handleLeftBtn"
@@ -63,78 +60,103 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, reactive, toRefs } from "vue";
-import { useStore } from "vuex";
+import { computed, defineComponent, onMounted, reactive, toRefs } from 'vue';
+import { useStore } from 'vuex';
+import { useRoute, useRouter } from 'vue-router';
 
-import OrderSteps from "@/components/steps-order/Index.vue";
-import ApplyContent from "@/components/apply-info/Index.vue";
-import BottomButton from "@/components/bottom-button/Index.vue";
+import OrderSteps from '@/components/steps-order/Index.vue';
+import ApplyContent from '@/components/apply-info/Index.vue';
+import BottomButton from '@/components/bottom-button/Index.vue';
 
-import { getApplyRecordDetail } from "@/service/api";
-import { isObjEmpty } from "../utils/utils";
-import { toPay,canleApply,resetWriteInfo,checkLogistics } from "@/utils/commonOrder";
+import { getApplyRecordDetail, cancelApply } from '@/service/api';
+import { isObjEmpty } from '../utils/utils';
+import {
+  toPay,
+  canleApplyMethod,
+  resetWriteInfo,
+  checkLogistics,
+} from '@/utils/commonOrder';
 const buttonContext = [
   {
-    text: "去支付",
+    text: '去支付',
     styleBtn: {
-      background: "#FFAE17",
-      border: "1px solid #FFAE17",
-      color: "#fff",
+      background: '#FFAE17',
+      border: '1px solid #FFAE17',
+      color: '#fff',
     },
   },
-  { text: "取消申请", styleWidth: {} },
+  { text: '取消申请', styleWidth: {} },
 ];
 
 export default defineComponent({
-  name: "detail",
+  name: 'detail',
   components: {
     OrderSteps,
     ApplyContent,
     BottomButton,
   },
   setup() {
-    const { getters } = useStore();
+    const route = useRoute();
+    const router = useRouter();
+    const { getters, commit } = useStore();
     const { getNewWriteInfo: writeInfo } = getters;
     const state = reactive({
       writeInfo: {},
       data: {
-        applyStatus: 2,
+        applyStatus: 0,
       },
       currentIndex: 0,
       isShowBtn: false,
       isSingle: false,
       isPass: false,
-      failReason: "审核失败",
+      failReason: '审核失败',
       buttonContext,
+      time: 0,
+      showOverTime: false,
     });
     const getDetails = async () => {
-      // const { data } = await getApplyRecordDetail(5);
-      // if (!isObjEmpty(data)) {
-      //   const {
-      //     applyType,
-      //     clientName,
-      //     clientIdCardNo,
-      //     inHosArea,
-      //     patientName,
-      //     patientIdCardNo,
-      //     patientHosCardNo,
-      //     submitTime,
-      //   } = data;
-      //   state.writeInfo.isMyself = applyType;
-      //   state.writeInfo.othersName = clientName;
-      //   state.writeInfo.othersCardId = clientIdCardNo;
-      //   state.writeInfo.hospitalName = inHosArea;
-      //   state.writeInfo.patientName = patientName;
-      //   state.writeInfo.patientCardId = patientIdCardNo;
-      //   state.writeInfo.hosNo = patientHosCardNo;
-      //   state.writeInfo.submissionDate = submitTime;
-      //   state.data = data;
+      const { id } = route.query;
+      const { data } = await getApplyRecordDetail(id);
+      if (!isObjEmpty(data)) {
+        const {
+          applyType,
+          clientName,
+          clientIdCardNo,
+          inHosArea,
+          patientName,
+          patientIdCardNo,
+          patientHosCardNo,
+          submitTime,
+          applyStatus,
+        } = data;
+        state.writeInfo.isMyself = applyType;
+        state.writeInfo.othersName = clientName;
+        state.writeInfo.othersCardId = clientIdCardNo;
+        state.writeInfo.hospitalName = inHosArea;
+        state.writeInfo.patientName = patientName;
+        state.writeInfo.patientCardId = patientIdCardNo;
+        state.writeInfo.hosNo = patientHosCardNo;
+        state.writeInfo.submissionDate = submitTime;
+        state.time = countTime(submitTime);
+        state.data = data;
+        // changeBtnIsShow(applyStatus);
+        changeIsSingleBtn(applyStatus);
+        changIsPassAndFailReason(applyStatus, '审核失败');
+        changeStepsCurrentIndex(applyStatus);
+      }
+    };
 
-      // }
-      changeBtnIsShow(2);
-      changeIsSingleBtn(2);
-      changIsPassAndFailReason(2, "审核失败");
-      changeStepsCurrentIndex(2);
+    const countTime = (submitTime) => {
+      const TIME = 1 * 60 * 60 * 1000;
+      const submitTimestamp = Date.parse(submitTime.replace(/-/g, '/'));
+      const curTime = new Date().getTime() - submitTimestamp;
+      console.log(curTime <= TIME, '6+546465464');
+
+      if (curTime <= TIME) {
+        state.time = TIME - curTime;
+      } else {
+        state.time = 0;
+      }
     };
 
     const changeStepsCurrentIndex = (status) => {
@@ -147,7 +169,6 @@ export default defineComponent({
         9: 4,
       };
       state.currentIndex = stepsIndex[status];
-      console.log(state.currentIndex);
     };
 
     const changIsPassAndFailReason = (status, failReason) => {
@@ -170,69 +191,95 @@ export default defineComponent({
     const changeIsSingleBtn = (status) => {
       const statusArr = [2, 8];
       const statusBtnText = {
-        4: "取消申请",
-        6: "补充资料",
-        5: "等待自提/收货",
+        4: '取消申请',
+        6: '补充资料',
+        5: '等待自提/收货',
       };
       // 是否显示单个
       state.isSingle = !statusArr.includes(status);
-      console.log(statusArr.includes(status));
+      console.log(state.isSingle, 'state.isSingle');
 
       // 如果显示单个改变按钮文字
       if (state.isSingle) {
-        state.buttonContext.unshift();
         state.buttonContext[0].text = statusBtnText[status];
-        state.buttonContext[0].styleBtn.background = "#fff";
-        state.buttonContext[0].styleBtn.color = "#00C6B8";
-        state.buttonContext[0].styleBtn.border = "1px solid #00C6B8";
+        state.buttonContext[0].styleBtn.background = '#fff';
+        state.buttonContext[0].styleBtn.color = '#00C6B8';
+        state.buttonContext[0].styleBtn.border = '1px solid #00C6B8';
       } else {
-        if (status === 9) {
-          state.buttonContext[0].styleBtn.background = "#00C6B8";
-          state.buttonContext[0].styleBtn.border = "1px solid #00C6B8";
+        if (status === 8) {
+          state.buttonContext[0].text = '确认收件';
+          state.buttonContext[0].styleBtn.background = '#00C6B8';
+          state.buttonContext[0].styleBtn.border = '1px solid #00C6B8';
         }
       }
     };
 
     onMounted(getDetails);
 
+    const computedBgc = computed(() => {
+      return state.data.applyStatus !== 3;
+    });
+
+    const computedCountShow = computed(() => {
+      return state.data.applyStatus === 2 && state.data.applyStatus !== 3;
+    });
+
+    const computedHeaderSteps = computed(() => {
+      return state.data.applyStatus !== 2 && state.data.applyStatus !== 3;
+    });
+
+    const computedShowBottomBtn = computed(() => {
+      return function (status) {
+        const statusArr = [1, 3, 7, 9];
+        return statusArr.includes(status) ? false : true;
+      };
+    });
+
     // 倒计时结束
     const finishCountTime = () => {
-      console.log("倒计时结束--调用取消申请");
-      canleApply();
+      console.log('倒计时结束--调用取消申请');
+      // if (state.data.applyStatus === 2) {
+      //   cancelApply({ id: state.data.id })
+      //     .then((result) => {
+      //       state.data.applyStatus = 3;
+      //       state.showOverTime = true;
+      //     })
+      //     .catch((err) => {});
+      // }
     };
 
     const confirmReceipt = () => {
-      console.log("确认收件了");
+      console.log('确认收件了');
     };
 
     const strategyBtnLeft = {
-      2: canleApply,
+      2: canleApplyMethod,
       8: checkLogistics,
     };
 
     const strategyBtnRight = {
       2: toPay,
-      4: canleApply,
-      6: resetWriteInfo,
-      5: () => console.log("等待自提/收货"),
+      4: canleApplyMethod,
+      6: () => resetWriteInfo(commit, router, id),
+      5: () => console.log('等待自提/收货'),
       8: confirmReceipt,
     };
 
-    const executeFunc = (executeObj = "right") => {
+    const executeFunc = (executeObj = 'right') => {
       const {
         data: { applyStatus },
       } = state;
-      if (executeObj === "right") {
+      if (executeObj === 'right') {
         if (strategyBtnRight[applyStatus]) {
           strategyBtnRight[applyStatus]();
         } else {
-          console.log("状态出错！");
+          console.log('状态出错！');
         }
       } else {
         if (strategyBtnLeft[applyStatus]) {
           strategyBtnLeft[applyStatus]();
         } else {
-          console.log("状态出错！");
+          console.log('状态出错！');
         }
       }
     };
@@ -243,7 +290,7 @@ export default defineComponent({
     };
 
     const handleLeftBtn = () => {
-      executeFunc("left");
+      executeFunc('left');
     };
 
     return {
@@ -251,7 +298,10 @@ export default defineComponent({
       handleDefaultBtn,
       handleLeftBtn,
       finishCountTime,
-      time: 2000,
+      computedBgc,
+      computedHeaderSteps,
+      computedCountShow,
+      computedShowBottomBtn,
     };
   },
 });
@@ -275,7 +325,7 @@ export default defineComponent({
     font-size: 0.16rem;
     font-weight: bold;
     display: inline-block;
-    width: 120px;
+    max-width: 120px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -294,16 +344,12 @@ export default defineComponent({
   .address-info {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     margin-top: 0.2rem;
   }
   .address-icon {
     width: 0.16rem;
     height: 0.19rem;
-  }
-  .arrow-icon {
-    width: 0.24rem;
-    height: 0.24rem;
+    margin-right: 10px;
   }
   .flex-column {
     display: flex;

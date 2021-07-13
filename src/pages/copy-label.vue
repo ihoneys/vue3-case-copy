@@ -1,7 +1,7 @@
 <template>
   <div class="copy-label-wrapper">
     <div class="header-title">
-      <span class="title">复印用途</span>
+      <span class="title">复印内容</span>
       <span class="describe">（可多选）</span>
     </div>
     <LabelList :list="copyContent" />
@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="header-title">
-      <span class="title">复印内容</span>
+      <span class="title">复印用途</span>
       <span class="describe">（可多选）</span>
     </div>
     <LabelList :list="copyPurpose" />
@@ -61,7 +61,7 @@ import LabelList from "@/components/label-list/Index.vue";
 
 import { areaList } from '@vant/area-data';
 import { getCopyLabelData, saveCopyContent, getCopyPurposeContent } from "@/service/api";
-import { isObjEmpty } from "@/utils/utils"
+import { isObjEmpty, validateFunc } from "@/utils/utils"
 
 const buttonContext = [
   {
@@ -84,7 +84,7 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const { getters, commit } = useStore()
-    const { getIsMyself: isMyself, getCopyPageData: copyPageData, getRequestParams: requestParams, getApplyRecordId: applyId, getCopyDialog: copyDialog } = getters
+    const { getIsMyself: isMyself, getCopyPageData: copyPageData, getRequestParams: requestParams, getApplyRecordId: applyId, getCopyDialog: copyDialog, getIsResetWrite: isResetWrite } = getters
 
     const { unitId } = requestParams
     const { copyContent, copyPurpose, printNums, insuranceLocation } = copyPageData
@@ -102,6 +102,7 @@ export default defineComponent({
 
 
     const initLabelData = async () => {
+      console.log(21321)
       const { data } = await getCopyLabelData(unitId)
       if (!isObjEmpty(data)) {
         for (const key in data) {
@@ -113,11 +114,30 @@ export default defineComponent({
             })
           }
         }
+        console.log("+++6666")
       }
+
+
+      const findIncludes = (arr, content) => {
+
+        const contentArr = content.split(",")
+        contentArr.forEach(key => {
+          const keyIndex = arr.findIndex(item => item.name === key)
+          console.log(keyIndex)
+        })
+      }
+      if (isResetWrite) {
+        const { data } = await getCopyPurposeContent(applyId)
+        state.insuranceLocation = data.reimbursementAddress
+        state.printNums = data.printingSheetsNumber
+        findIncludes(state.copyContent, data.copyContent)
+        // 2021-7-13
+      }
+
+
     }
 
     const getCopyCotent = async () => {
-      console.log(applyId)
       const res = await getCopyPurposeContent(applyId)
       console.log(res)
     }
@@ -134,11 +154,12 @@ export default defineComponent({
           commit("changeCopyDialog")
         })
       }, 300)
-
     }
 
     onMounted(() => {
+      console.log(87979)
       initLabelData()
+      console.log(21321)
       getCopyCotent()
     })
 
@@ -152,17 +173,13 @@ export default defineComponent({
       state.show = false
     }
 
-
-
-
-
     const handleNext = () => {
       saveMethods()
-      // return
     };
 
     const saveMethods = async () => {
       const { selectedContent, selectedPurpose } = getSelectedLabel()
+      if (!validateCopy(selectedContent, selectedPurpose)) return
       commit("changeCopyData", { printNums: state.count, copyContent: selectedContent, copyPurpose: selectedPurpose, insuranceLocation: state.insuranceLocation })
       const postData = {
         applyId,
@@ -173,10 +190,27 @@ export default defineComponent({
         reimbursementAddressCode: state.areaCode
       }
       const { returnCode } = await saveCopyContent(postData)
+
       if (returnCode === 0) {
         router.push("/mailing")
       }
     }
+
+    const validateCopy = (selectedContent, selectedPurpose) => {
+      const content = [{
+        value: selectedPurpose.length,
+        text: "请选择复印用途！"
+      },
+      {
+        value: selectedContent.length,
+        text: "请选择复印内容！"
+      }, {
+        value: state.insuranceLocation,
+        text: "请选择保险所在地！"
+      }]
+      return validateFunc(content)
+    }
+
 
     const getSelectedLabel = () => {
       let copyContentStr = state.copyContent.reduce((acc, cur, index) => {

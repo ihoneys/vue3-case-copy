@@ -1,11 +1,31 @@
 <template>
-  <router-view />
+  <!-- <router-view v-if="isRouterAlive" /> -->
+  <router-view v-if="isRouterAlive" v-slot="{ Component }">
+    <keep-alive :include="includeList">
+      <component :is="Component" />
+    </keep-alive>
+  </router-view>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, nextTick, provide, ref } from 'vue';
 export default defineComponent({
   name: 'App',
+  setup() {
+    const isRouterAlive = ref(true);
+    const reload = () => {
+      isRouterAlive.value = false;
+      nextTick(() => {
+        isRouterAlive.value = true;
+      });
+    };
+    provide('reload', reload);
+    const includeList = ref(['record']);
+    return {
+      isRouterAlive,
+      includeList,
+    };
+  },
 });
 </script>
 
@@ -19,7 +39,7 @@ export default defineComponent({
 .mt-10 {
   margin-top: 10px;
 }
-.mb-10{
+.mb-10 {
   margin-bottom: 10px;
 }
 </style>

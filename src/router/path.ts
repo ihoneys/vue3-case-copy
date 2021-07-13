@@ -11,6 +11,7 @@ import MailingWay from '@/pages/mailing-way.vue'
 import Record from '@/pages/record.vue'
 import Signture from '@/pages/signture.vue'
 import Write from '@/pages/write-info.vue'
+import takeAddress from '@/pages/take-address.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -72,5 +73,11 @@ const routes: Array<RouteRecordRaw> = [
         name: 'write',
         component: Write,
     },
+    {
+        path: '/takeAddress',
+        name: 'takeAddress',
+        component: takeAddress,
+    },
+
 ]
 export default routes

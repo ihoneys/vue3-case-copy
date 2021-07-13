@@ -1,5 +1,5 @@
 <template>
-  <div class="without" v-if="isShow">
+  <div class="without" v-if="!isShow">
     <img src="@/assets/img/no-data.png" alt="" />
     <div>暂无地址可选</div>
   </div>
@@ -12,7 +12,7 @@ export default defineComponent({
   props: {
     isShow: {
       type: Boolean,
-      default: () => false,
+      default: () => true,
     },
   },
   setup(props) {

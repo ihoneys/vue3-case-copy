@@ -155,6 +155,17 @@ export const getExpressCompany = (unitId) => {
     })
 }
 
+// 根据医院id获取自提地址
+export const getTakeAddress = (unitId) => {
+    return request({
+        method: "get",
+        url: `/configItem/getPickUpAddressConfigByUnitId`,
+        params: {
+            unitId
+        }
+    })
+}
+
 // 保存领取方式
 export const saveMailingData = (data) => {
     return request({
@@ -165,11 +176,11 @@ export const saveMailingData = (data) => {
 }
 
 // 取消申请
-export const cancelApply = (data) => {
+export const cancelApply = (params) => {
     return request({
         method: "put",
         url: `/applyRecord/cancelApply`,
-        params: data
+        params,
     })
 }
 
@@ -186,13 +197,19 @@ export const getPrepaidFee = (unitId) => {
 }
 
 // 记录列表
-export const getRecordList = (unitId) => {
+export const getRecordList = (params) => {
     return request({
         method: "get",
         url: `/applyRecord/getApplyRecordList`,
-        params: {
-            unitId
-        }
+        params
+    })
+}
+
+
+export const getPickUpAddress = (applyId) => {
+    return request({
+        method: "get",
+        url: `/collectionMethod/getPickUpAddress/${applyId}`,
     })
 }
 

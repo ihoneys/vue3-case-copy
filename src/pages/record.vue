@@ -3,43 +3,71 @@
     <van-list
       v-model:loading="loading"
       :finished="finished"
+      offset="20"
       finished-text="没有更多了"
       @load="onLoad"
     >
       <div class="record-column" v-for="(item, i) in list" :key="i">
-        <ul class="column-list" @click="handleItem(item)">
+        <ul
+          :class="[
+            'column-list',
+            isShowBtn(item.applyStatus) ? '' : 'item-radius',
+          ]"
+          @click="handleItem(item)"
+        >
           <li>
-            <div>申请人：{{ item.name }}</div>
-            <div :style="{ color: statusObj[item.orderStatus].color }">
-              {{ statusObj[item.orderStatus].name }}
+            <div>申请人：{{ item.applicant }}</div>
+            <div :style="{ color: statusObj[item.applyStatus].color }">
+              {{ statusObj[item.applyStatus].name }}
             </div>
           </li>
           <li>患者姓名：{{ item.patientName }}</li>
-          <li>提交日期：{{ item.date }}</li>
-          <li>就诊时间：2021-04-20至2021</li>
+          <li>提交日期：{{ item.submitTime }}</li>
+          <li>就诊时间：{{ item.inHosTime }}至{{ item.outHosTime }}</li>
+          <li>预缴费用：{{ item.prepaidFees }}元</li>
         </ul>
-        <div class="button-wrapper">
+        <div class="button-wrapper" v-if="isShowBtn(item.applyStatus)">
+          <template v-if="item.applyStatus === 2">
+            <button class="button-item black" @click="canleOrderBtn(item)">
+              取消订单
+            </button>
+            <button class="button-item orange" @click="toPayBtn">支付</button>
+          </template>
+
           <button
-            v-if="item.orderStatus === 2"
-            class="button-item orange"
-            @click="toPayBtn"
+            v-else-if="item.applyStatus === 4"
+            class="button-item black"
+            @click="canleOrderBtn(item)"
           >
-            支付
-          </button>
-          <button v-else-if="item.orderStatus === 4" class="button-item black">
             取消订单
           </button>
-          <template v-else-if="item.orderStatus === 6">
-            <button class="button-item black" @click="canleOrderBtn">取消订单</button>
-            <button class="button-item orange" @click="handleSupplement">补充资料</button>
+          <template v-else-if="item.applyStatus === 6">
+            <button class="button-item black" @click="canleOrderBtn(item)">
+              取消订单
+            </button>
+            <button class="button-item orange" @click="handleSupplement(item)">
+              补充资料
+            </button>
           </template>
-          <button v-else-if="item.orderStatus === 8" class="button-item orange" @click="handleLogistics">
+          <button
+            v-else-if="item.applyStatus === 8"
+            class="button-item orange"
+            @click="handleLogistics"
+          >
             查看物流
           </button>
-          <button v-else-if="item.orderStatus === 9" class="button-item black" @click="handleTakeNothing">
+          <button
+            v-else-if="item.applyStatus === 9"
+            class="button-item black"
+            @click="handleTakeNothing(item)"
+          >
             查看自提点
           </button>
-          <button v-else-if="item.orderStatus === 10" class="button-item black" @click="handleDetail">
+          <button
+            v-else-if="item.applyStatus === 10"
+            class="button-item black"
+            @click="handleDetail"
+          >
             查看详情
           </button>
         </div>
@@ -49,113 +77,119 @@
 </template>
 
 <script lang="ts">
-let list: Array<any> = [];
-const mockData = () => {
-  return Array.from({ length: 50 }).forEach((item, index) => {
-    list.push({
-      name: "李米" + index,
-      orderStatus: Math.floor(Math.random() * 10) + 1,
-      patientName: "小米" + index,
-      date: "2021-04-20 22:4",
-      treatmentDate: "2021-04-20",
-    });
-  });
-};
-mockData();
-import { defineComponent, reactive, toRefs } from "vue";
-import { useRouter } from "vue-router";
+import {
+  computed,
+  defineComponent,
+  inject,
+  onMounted,
+  reactive,
+  toRefs,
+} from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
 import {
   toPay,
-  canleApply,
+  canleApplyMethod,
   resetWriteInfo,
   checkLogistics,
-} from "@/utils/commonOrder";
+} from '@/utils/commonOrder';
+
+import { getRecordList } from '@/service/api';
+import { isObjEmpty } from '../utils/utils';
 const statusObj = {
   1: {
-    color: "#FF9F4F",
-    name: "暂存",
+    color: '#FF9F4F',
+    name: '暂存',
   },
   2: {
-    color: "#FF9F4F",
-    name: "待支付",
+    color: '#FF9F4F',
+    name: '待支付',
   },
   3: {
-    color: "#FF9F4F",
-    name: "已取消",
+    color: '#FF9F4F',
+    name: '已取消',
   },
   4: {
-    color: "#FF9F4F",
-    name: "待审核",
+    color: '#FF9F4F',
+    name: '待审核',
   },
   5: {
-    color: "#5ACF83",
-    name: "审核通过",
+    color: '#5ACF83',
+    name: '审核通过',
   },
   6: {
-    color: "#FA5151",
-    name: "审核失败",
+    color: '#FA5151',
+    name: '审核失败',
   },
   7: {
-    color: "#FA5151",
-    name: "审核失败",
+    color: '#FA5151',
+    name: '审核失败',
   },
   8: {
-    color: "#00C6B8",
-    name: "待收货",
+    color: '#00C6B8',
+    name: '待收货',
   },
   9: {
-    color: "#00C6B8",
-    name: "待自提",
+    color: '#00C6B8',
+    name: '待自提',
   },
   10: {
-    color: "#00C6B8",
-    name: "已收货",
+    color: '#00C6B8',
+    name: '已收货',
   },
 };
 export default defineComponent({
-  name: "App",
+  name: 'record',
   setup() {
+    const reload = inject('reload');
+    const { commit } = useStore();
     const router = useRouter();
     const state = reactive({
       loading: false,
       finished: false,
       list: [] as any,
     });
-
-    const onLoad = () => {
-      // 异步更新数据
-      // setTimeout 仅做示例，真实场景中一般为 ajax 请求
-      setTimeout(() => {
-        for (let i = 0; i < 10; i++) {
-          state.list.push({
-            name: "李米" + i,
-            orderStatus: Math.floor(Math.random() * 10) + 1,
-            patientName: "小米" + i,
-            date: "2021-04-20 22:4",
-            treatmentDate: "2021-04-20",
-            id:
-              (Math.floor(Math.random() * 10) + 1) *
-              Math.floor(Math.random() * 10),
-          });
-        }
-
-        // 加载状态结束
-        state.loading = false;
-
-        // 数据全部加载完成
-        if (state.list.length >= 40) {
-          state.finished = true;
-        }
-      }, 1000);
+    const params = {
+      currentPage: 0,
+      openId: 33,
+      pageSize: 10,
+      unitId: 11,
+      userId: 22,
     };
 
-    const handleItem = ({ id, status }) => {
+    const onLoad = async () => {
+      params.currentPage++;
+      const res = await getRecordList(params);
+      if (!isObjEmpty(res.data)) {
+        state.list = [...state.list, ...res.data.data];
+        state.loading = false;
+        if (state.list.length >= res.data.total) {
+          state.finished = true;
+        }
+      } else {
+        state.finished = true;
+      }
+    };
+
+    const isShowBtn = computed(() => {
+      return (status) => {
+        return (
+          status === 2 ||
+          status === 4 ||
+          status === 6 ||
+          status === 8 ||
+          status === 9 ||
+          status === 10
+        );
+      };
+    });
+
+    const handleItem = ({ id }) => {
       router.push({
-        name: "detail",
+        name: 'detail',
         query: {
           id,
-          status,
         },
       });
     };
@@ -163,29 +197,39 @@ export default defineComponent({
       toPay();
     };
 
-    const canleOrderBtn = () => {
-      canleApply()
-    }
+    const canleOrderBtn = ({ id }) => {
+      // canleApplyMethod(id);
+      setTimeout(() => {
+        reload();
+      }, 1500);
+    };
 
     // 补充资料
-    const handleSupplement = () => {
-      resetWriteInfo()
-    }
+    const handleSupplement = ({ id }) => {
+      resetWriteInfo(router, commit, id);
+    };
 
     const handleLogistics = () => {
-      checkLogistics()
-    }
+      checkLogistics();
+    };
 
-    const handleTakeNothing = () => {
-      console.log("查看自提地点")
-    }
+    const handleTakeNothing = ({ id }) => {
+      console.log('查看自提地点');
+      router.push({
+        name: 'takeAddress',
+        query: {
+          applyId: id,
+        },
+      });
+    };
 
     const handleDetail = () => {
-      console.log("查看详情")
-    }
+      console.log('查看详情');
+    };
     return {
       ...toRefs(state),
       statusObj,
+      isShowBtn,
       onLoad,
       handleItem,
       toPayBtn,
@@ -222,6 +266,10 @@ export default defineComponent({
       margin-bottom: 0;
     }
   }
+}
+.item-radius {
+  border-bottom-left-radius: 0.06rem;
+  border-bottom-right-radius: 0.06rem;
 }
 .button-wrapper {
   text-align: right;

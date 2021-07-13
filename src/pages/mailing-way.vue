@@ -45,7 +45,8 @@
           </div>
         </div>
         <div class="take-address">
-          南山医院门诊综合楼负一楼病案管理科 备注： 取件时间：工作日：8:00-12:00
+          {{ takeAddress.pickUpAddress }} 备注：<br />
+          电话：{{takeAddress.contactPhone}} 取件时间：工作日：{{ takeAddress.pickUpTime }}
         </div>
       </template>
       <div class="user-tips">
@@ -81,7 +82,11 @@ import HeaderSteps from '@/components/steps/Index.vue';
 import BottomButton from '@/components/bottom-button/Index.vue';
 
 import { defineSteps, isObjEmpty } from '../utils/utils';
-import { getExpressCompany, saveMailingData } from '@/service/api';
+import {
+  getExpressCompany,
+  saveMailingData,
+  getTakeAddress,
+} from '@/service/api';
 
 const buttonContext = [
   {
@@ -110,7 +115,7 @@ export default defineComponent({
       getRequestParams: requestParams,
       getMailingAddress: mailingObject,
       getUpdateAddress: addressInfo,
-      changeApplyRecordId: recordId,
+      getApplyRecordId: recordId,
     } = getters;
 
     const { unitId } = requestParams;
@@ -123,13 +128,25 @@ export default defineComponent({
 
     const checked = ref(way);
     const expressCompany = ref(expCompany);
-    console.log(expressCompany.value, 'expressCompany65666');
     const columns = ref([]);
     const show = ref(false);
+    const takeAddress = ref('');
 
+    let requestNums = 0;
     const watchChange = (val) => {
       checked.value = val;
       dispatch('changeIsTakeAction', val);
+      if (val === '2' && requestNums === 0) {
+        getTakeAddressContent();
+      }
+    };
+
+    const getTakeAddressContent = async () => {
+      const { data } = await getTakeAddress(unitId);
+      if (!isObjEmpty(data)) {
+        takeAddress.value = data;
+      }
+      requestNums = 1;
     };
 
     onMounted(async () => {
@@ -147,21 +164,27 @@ export default defineComponent({
     };
 
     const handleNext = () => {
+      nextSaveData()
       commitChangeMailingAddress();
-      router.push('/payOrder');
+      
     };
 
     const nextSaveData = async () => {
       const postData = {
         addressId,
         applyId: recordId,
-        collectionMethod: checked.value,
+        collectionMethod: checked.value === '1' ? 1 : 0,
         expressAddress: mailingAddress,
         expressCompany: expressCompany.value,
-        // pickUpAddress:
       };
-      const res = await saveMailingData(postData);
-      console.log(res);
+      if (checked.value === '2') {
+        postData.pickUpAddress = `${takeAddress.value.pickUpAddress}备注：电话：${takeAddress.value.contactPhone} 取件时间：工作日：${takeAddress.value.pickUpTime}`;
+      }
+      const {returnCode} = await saveMailingData(postData);
+
+      if(returnCode === 0) {
+        router.push('/payOrder')
+      }
     };
 
     const handlePrev = () => {
@@ -191,6 +214,7 @@ export default defineComponent({
       checked,
       currentAddress: mailingAddress,
       watchChange,
+      takeAddress,
       handleAddress,
       buttonContext,
       handleNext,

@@ -4,11 +4,11 @@
       <span className="headerline">申请信息</span>
     </li>
     <template v-if="applyInfo.isMyself">
-      <li>
+      <li v-if="applyInfo.othersName">
         <span className="content-name">申请人：</span>
         <span className="content-text">{{applyInfo.othersName}}</span>
       </li>
-      <li>
+      <li v-if="applyInfo.othersCardId">
         <span className="content-name">申请人证件号：</span>
         <span className="content-text">{{applyInfo.othersCardId}}</span>
       </li>

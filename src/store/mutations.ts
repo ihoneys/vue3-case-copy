@@ -75,6 +75,9 @@ const mutations = {
         state.requestParams.unitId = unitId
         state.requestParams.openId = openId
         state.requestParams.userId = userId
+    },
+    changeIsResetWrite(state, value) {
+        state.isResetWrite = value
     }
 }
 

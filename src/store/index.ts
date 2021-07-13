@@ -35,6 +35,7 @@ const state = {
     currentAddress: "",
     signImage: "",
     copyDialog: true,
+    isResetWrite: true,
     updateAddress: {
         user: '',
         phone: '',
@@ -44,8 +45,8 @@ const state = {
         id: '',
     },
     requestParams: {
-        userId: 11,
-        openId: 11,
+        userId: 22,
+        openId: 33,
         unitId: 11,
     },
     writeInfo: {
