@@ -59,7 +59,7 @@ export default defineComponent({
   margin-left: 0.1rem;
   margin-top: 0.15rem;
   box-sizing: border-box;
-  border: 1px solid transparent;
+  border: .01rem solid transparent;
 }
 .active-color {
   border: 0.01rem solid #00c6b8;

@@ -1,25 +1,22 @@
 <template>
   <div class="detail-wrapper">
     <div class="background" v-if="computedBgc"></div>
-    <div class="count-wrapper" v-show="computedCountShow">
+    <div class="count-wrapper" v-if="computedCountShow">
       <img class="count-icon" src="@/assets/img/count-down.png" alt="" />
       <!-- <div v-if="showOverTime">申请超时未支付，已取消！</div> -->
       <div class="count-time">
-        <span class="time">等待支付倒计时：</span>
-        <van-count-down :time="time" @finish="finishCountTime">
-          <template #default="timeData">
-            <span class="time" v-if="timeData.hours">{{ timeData.hours }}</span>
-            <span class="time" v-if="timeData.hours">:</span>
-            <span class="time">{{ timeData.minutes }}</span>
-            <span class="time">:</span>
-            <span class="time">{{ timeData.seconds }}</span>
-          </template>
-        </van-count-down>
+        <span class="count-time-style">等待支付倒计时：</span>
+        <van-count-down
+          class="count-time-style"
+          format="mm:ss"
+          :time="time"
+          @finish="finishCountTime"
+        />
       </div>
     </div>
     <template v-if="computedHeaderSteps">
       <OrderSteps
-        :currentIndex="currentIndex"
+        :currentIndex="computedStepsCurIndex"
         :isPass="isPass"
         :statusCode="data.applyStatus"
         :failReason="failReason"
@@ -68,20 +65,25 @@ import OrderSteps from '@/components/steps-order/Index.vue';
 import ApplyContent from '@/components/apply-info/Index.vue';
 import BottomButton from '@/components/bottom-button/Index.vue';
 
-import { getApplyRecordDetail, cancelApply } from '@/service/api';
+import {
+  getApplyRecordDetail,
+  cancelApply,
+  confirmReceipt as confirmReceiptRequest,
+} from '@/service/api';
 import { isObjEmpty } from '../utils/utils';
 import {
   toPay,
-  canleApplyMethod,
+  cancelApplyMethod,
   resetWriteInfo,
   checkLogistics,
 } from '@/utils/commonOrder';
+import { Dialog, Toast } from 'vant';
 const buttonContext = [
   {
     text: '去支付',
     styleBtn: {
       background: '#FFAE17',
-      border: '1px solid #FFAE17',
+      border: '.01rem solid #FFAE17',
       color: '#fff',
     },
   },
@@ -99,7 +101,10 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const { getters, commit } = useStore();
-    const { getNewWriteInfo: writeInfo } = getters;
+    const { getNewWriteInfo: writeInfo, getRequestParams: requestParams } =
+      getters;
+    const { unitId, openId, userId } = requestParams;
+    const { id } = route.query;
     const state = reactive({
       writeInfo: {},
       data: {
@@ -111,11 +116,11 @@ export default defineComponent({
       isPass: false,
       failReason: '审核失败',
       buttonContext,
-      time: 0,
+      time: 330000,
       showOverTime: false,
     });
+
     const getDetails = async () => {
-      const { id } = route.query;
       const { data } = await getApplyRecordDetail(id);
       if (!isObjEmpty(data)) {
         const {
@@ -137,12 +142,12 @@ export default defineComponent({
         state.writeInfo.patientCardId = patientIdCardNo;
         state.writeInfo.hosNo = patientHosCardNo;
         state.writeInfo.submissionDate = submitTime;
-        state.time = countTime(submitTime);
         state.data = data;
-        // changeBtnIsShow(applyStatus);
+        countTime(submitTime);
         changeIsSingleBtn(applyStatus);
         changIsPassAndFailReason(applyStatus, '审核失败');
         changeStepsCurrentIndex(applyStatus);
+        console.log(applyStatus);
       }
     };
 
@@ -150,12 +155,10 @@ export default defineComponent({
       const TIME = 1 * 60 * 60 * 1000;
       const submitTimestamp = Date.parse(submitTime.replace(/-/g, '/'));
       const curTime = new Date().getTime() - submitTimestamp;
-      console.log(curTime <= TIME, '6+546465464');
-
       if (curTime <= TIME) {
         state.time = TIME - curTime;
       } else {
-        state.time = 0;
+        // state.time = 0;
       }
     };
 
@@ -166,7 +169,8 @@ export default defineComponent({
         6: 2,
         7: 2,
         8: 3,
-        9: 4,
+        9: 3,
+        10: 4,
       };
       state.currentIndex = stepsIndex[status];
     };
@@ -176,15 +180,6 @@ export default defineComponent({
       state.isPass = !noPassStatus.includes(status);
       if (status === 6) {
         state.failReason = failReason;
-      }
-    };
-
-    const changeBtnIsShow = (status) => {
-      const statusArr = [1, 3, 7, 9];
-      if (statusArr.includes(status)) {
-        state.isShowBtn = false;
-      } else {
-        state.isShowBtn = true;
       }
     };
 
@@ -204,12 +199,12 @@ export default defineComponent({
         state.buttonContext[0].text = statusBtnText[status];
         state.buttonContext[0].styleBtn.background = '#fff';
         state.buttonContext[0].styleBtn.color = '#00C6B8';
-        state.buttonContext[0].styleBtn.border = '1px solid #00C6B8';
+        state.buttonContext[0].styleBtn.border = '.01rem solid #00C6B8';
       } else {
         if (status === 8) {
           state.buttonContext[0].text = '确认收件';
           state.buttonContext[0].styleBtn.background = '#00C6B8';
-          state.buttonContext[0].styleBtn.border = '1px solid #00C6B8';
+          state.buttonContext[0].styleBtn.border = '.01rem solid #00C6B8';
         }
       }
     };
@@ -219,47 +214,78 @@ export default defineComponent({
     const computedBgc = computed(() => {
       return state.data.applyStatus !== 3;
     });
-
     const computedCountShow = computed(() => {
       return state.data.applyStatus === 2 && state.data.applyStatus !== 3;
     });
 
     const computedHeaderSteps = computed(() => {
-      return state.data.applyStatus !== 2 && state.data.applyStatus !== 3;
+      const includesList = [0, 2, 3];
+      return !includesList.includes(state.data.applyStatus);
     });
 
     const computedShowBottomBtn = computed(() => {
       return function (status) {
-        const statusArr = [1, 3, 7, 9];
-        return statusArr.includes(status) ? false : true;
+        const statusArr = [2, 4, 5, 6, 8, 9];
+        return statusArr.includes(status);
       };
+    });
+
+    const computedStepsCurIndex = computed(() => {
+      return state.currentIndex;
     });
 
     // 倒计时结束
     const finishCountTime = () => {
-      console.log('倒计时结束--调用取消申请');
-      // if (state.data.applyStatus === 2) {
-      //   cancelApply({ id: state.data.id })
-      //     .then((result) => {
-      //       state.data.applyStatus = 3;
-      //       state.showOverTime = true;
-      //     })
-      //     .catch((err) => {});
-      // }
+      if (state.data.applyStatus === 2) {
+        cancelApply({ id: state.data.id })
+          .then((result) => {
+            state.data.applyStatus = 3;
+            state.showOverTime = true;
+          })
+          .catch((err) => {});
+      }
+      console.log('倒计时结束');
     };
 
+    // 确认收件
     const confirmReceipt = () => {
-      console.log('确认收件了');
+      Dialog.confirm({
+        title: '提示',
+        message: '是否确认收件？',
+        confirmButtonColor: '#00C6B8',
+      }).then(async () => {
+        const { returnCode } = await confirmReceiptRequest(state.data.id);
+        let receiptText = '确认收件失败!';
+        if (returnCode === 0) {
+          receiptText = '收件成功！';
+          state.currentIndex = 4; // 头部进度条更新
+          state.applyStatus = 10; // 已完成
+        }
+        Toast.success(receiptText);
+      });
     };
 
     const strategyBtnLeft = {
-      2: canleApplyMethod,
+      2: () =>
+        cancelApplyMethod(state.data.id, () => {
+          router.push('/record');
+        }),
       8: checkLogistics,
     };
 
     const strategyBtnRight = {
-      2: toPay,
-      4: canleApplyMethod,
+      2: () =>
+        toPay({
+          unitId,
+          openId,
+          userId,
+          payAmount: state.data.prepaidFees,
+          applyId: id,
+        }),
+      4: () =>
+        cancelApplyMethod(state.data.id, () => {
+          router.push('/record');
+        }),
       6: () => resetWriteInfo(commit, router, id),
       5: () => console.log('等待自提/收货'),
       8: confirmReceipt,
@@ -269,18 +295,14 @@ export default defineComponent({
       const {
         data: { applyStatus },
       } = state;
+      console.log(applyStatus, '788');
       if (executeObj === 'right') {
-        if (strategyBtnRight[applyStatus]) {
-          strategyBtnRight[applyStatus]();
-        } else {
-          console.log('状态出错！');
-        }
+        if (!strategyBtnRight[applyStatus])
+          return console.log('状态出错！right');
+        strategyBtnRight[applyStatus]();
       } else {
-        if (strategyBtnLeft[applyStatus]) {
-          strategyBtnLeft[applyStatus]();
-        } else {
-          console.log('状态出错！');
-        }
+        if (!strategyBtnLeft[applyStatus]) return console.log('状态出错！left');
+        strategyBtnLeft[applyStatus]();
       }
     };
 
@@ -302,12 +324,13 @@ export default defineComponent({
       computedHeaderSteps,
       computedCountShow,
       computedShowBottomBtn,
+      computedStepsCurIndex,
     };
   },
 });
 </script>
 
-<style lang="scss" scope>
+<style lang="scss" scoped>
 .detail-wrapper {
   min-height: 100vh;
   padding: 0.1rem 0.12rem;
@@ -325,7 +348,7 @@ export default defineComponent({
     font-size: 0.16rem;
     font-weight: bold;
     display: inline-block;
-    max-width: 120px;
+    max-width: 1.2rem;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -349,7 +372,7 @@ export default defineComponent({
   .address-icon {
     width: 0.16rem;
     height: 0.19rem;
-    margin-right: 10px;
+    margin-right: .1rem;
   }
   .flex-column {
     display: flex;
@@ -363,15 +386,15 @@ export default defineComponent({
   bottom: 0;
   right: 0;
   width: 100%;
-  height: 74px;
+  height: .74rem;
   background: linear-gradient(180deg, #00c6b8 0%, #f5f5f5 100%);
   z-index: 1;
 }
 .count-wrapper {
   position: relative;
-  height: 64px;
-  line-height: 64px;
-  border-radius: 6px;
+  height: .64rem;
+  line-height: .64rem;
+  border-radius: .06rem;
   z-index: 999;
   box-sizing: border-box;
   background-color: #ffffff;
@@ -379,19 +402,20 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   .count-icon {
-    width: 24px;
-    height: 24px;
+    width: .24rem;
+    height: .24rem;
     z-index: 999;
-    margin-right: 8px;
+    margin-right: .08rem;
   }
   .count-time {
     display: flex;
     align-items: center;
-  }
-  .time {
-    color: #ffae17;
-    font-size: 16px !important;
-    font-weight: bold;
+    .count-time-style {
+      color: #ffae17;
+      font-size: .16rem;
+      font-weight: bold;
+      letter-spacing: -0.01rem;
+    }
   }
 }
 </style>

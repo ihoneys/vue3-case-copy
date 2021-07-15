@@ -31,11 +31,12 @@ interface StateInterface {
     copyPageData: CurCopyData,
 }
 const state = {
-    applyRecordId: 1064,
+    applyRecordId: 1082,
     currentAddress: "",
     signImage: "",
     copyDialog: true,
-    isResetWrite: true,
+    isResetWrite: false,
+
     updateAddress: {
         user: '',
         phone: '',
@@ -69,6 +70,7 @@ const state = {
         outHosTime: '', // 出院时间
         isSelected: false, // 是否勾选
         feedback: '', // 反馈
+        id: null,
         typeTime: 'inHosTime',
         submissionDate: '',
     },

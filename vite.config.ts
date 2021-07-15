@@ -10,8 +10,8 @@ export default defineConfig({
         // 覆盖样式变量
         modifyVars: {
           'blue': '#00C6B8',
-          'gray-7' : '#333333',
-          'gray-4' : '#00C6B8',
+          'gray-7': '#333333',
+          'gray-4': '#00C6B8',
         },
       },
     },
@@ -63,11 +63,16 @@ export default defineConfig({
     cors: true, // 允许跨域
     proxy: {
       '/api': {
-        target: 'http://10.1.95.110:9001',
+        target: 'http://192.168.10.72:9001',
+        // target: 'http://10.1.95.65:9001',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace('/api/', '/')
       }
+    },
+    fs: {
+      // Allow serving files from one level up to the project root
+      allow: ['.']
     }
   },
 

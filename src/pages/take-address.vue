@@ -33,13 +33,13 @@ export default defineComponent({
 .take-address {
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding: 10px 12px;
+  padding: .1rem .12rem;
   box-sizing: border-box;
   .take-adderss-wrapper {
     background-color: #fff;
-    border-radius: 6px;
-    padding: 20px 15px;
-    line-height: 25px;
+    border-radius: .06rem;
+    padding: .2rem .15rem;
+    line-height: .25rem;
   }
 }
 </style>

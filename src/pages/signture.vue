@@ -81,6 +81,7 @@ import {
   getEntrustedMattersByParams,
   uploadImageBas64,
   saveMatterContent,
+  getPowerAttorney,
 } from '@/service/api';
 
 import SignturePad from 'signature_pad';
@@ -111,10 +112,12 @@ export default defineComponent({
       getRequestParams: requestParams,
       getApplyRecordId: applyRecordId,
       getSignImage,
+      getIsResetWrite: isResetWrite,
     } = getters;
 
     const signShow = ref(false);
     const signImage = ref(getSignImage);
+
     const currentDate = getYearsMonthDay();
     let powerAttorneyPic = '';
 
@@ -127,6 +130,7 @@ export default defineComponent({
       othersCardId,
       matter:
         '因复印需要，委托我的xx关系xx姓名为我的代理人，前往xxx医院复印我在xx科室住院治疗的病例资料，委托人签署该授权委托书真实有效，如有不实，本人承担全部法律责任。',
+      id: null,
     });
 
     onMounted(async () => {
@@ -140,7 +144,24 @@ export default defineComponent({
       if (matter) {
         state.matter = matter;
       }
+      
+      if(isResetWrite) {
+        getPowerAttorneyRequest();
+      }
     });
+
+    const getPowerAttorneyRequest = async () => {
+      const { data } = await getPowerAttorney(applyRecordId);
+      console.log(data)
+      if (!isObjEmpty(data)) {
+        state.patientName = data.patientName;
+        state.patientCardId = data.patientIdCardNo;
+        state.othersName = data.clientName;
+        state.othersCardId = data.clientIdCardNo;
+        state.id = data.id
+        signImage.value = data.clientSignature
+      }
+    };
 
     let signaturePad;
 

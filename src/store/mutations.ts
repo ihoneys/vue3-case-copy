@@ -17,7 +17,7 @@ const mutations = {
     },
     // 获取暂存数据
     changeReuqestApplyRecord(state, data) {
-        const { applyType, clientIdCardPros, clientIdCardCons, clientIdCardHold, clientIdCardNo, clientName, clientNameRelation, clientPhone, patientIdCardPros, patientIdCardCons, patientIdCardNo, patientName, patientPhone, inHosArea, inHosTime, outHosTime, remark } = data
+        const { applyType, clientIdCardPros, clientIdCardCons, clientIdCardHold, clientIdCardNo, clientName, clientNameRelation, clientPhone, patientIdCardPros, patientIdCardCons, patientIdCardNo, patientName, patientPhone, inHosArea, inHosTime, outHosTime, remark, id } = data
         state.writeInfo.isMyself = applyType ? 0 : 1
         state.writeInfo.othersCardPositive = clientIdCardPros ? [{ url: clientIdCardPros, isImage: true }] : []
         state.writeInfo.othersCardReverse = clientIdCardCons ? [{ url: clientIdCardCons, isImage: true }] : []
@@ -36,6 +36,7 @@ const mutations = {
         state.writeInfo.outHosTime = outHosTime
         state.writeInfo.isSelected = true
         state.writeInfo.feedback = remark
+        state.writeInfo.id = id
     },
     changeApplyRecordId(state, recordId) {
         state.applyRecordId = recordId

@@ -42,23 +42,25 @@ import { getUrlParams, aseDecrypt } from '../utils/utils';
 export default defineComponent({
   name: 'Home',
   setup() {
-    const { commit } = useStore();
+    const { commit, getters } = useStore();
+    const { getRequestParams: requestParams } = getters;
+    const { unitId } = requestParams;
     const router = useRouter();
     const listData = ref(entranceData);
     onMounted(async () => {
-      // const { data } = await getHomeUnitConfig(11);
-      // if (!isObjEmpty(data)) {
-      //   listData.value[0].content = data['suitablePeople'];
-      //   listData.value[1].content = data['obtainMode'];
-      //   listData.value[2].content = data['contactMode'];
-      // }
+      const { data } = await getHomeUnitConfig(unitId);
+      if (!isObjEmpty(data)) {
+        listData.value[0].content = data['suitablePeople'];
+        listData.value[1].content = data['obtainMode'];
+        listData.value[2].content = data['contactMode'];
+      }
     });
 
     const query = getUrlParams();
 
     if (!isObjEmpty(query)) {
       let userInfo = aseDecrypt(query.userInfo);
-      userInfo = JSON.parse(userInfo)
+      userInfo = JSON.parse(userInfo);
       let obj = {};
       for (const key in userInfo) {
         obj[key] = userInfo[key];
@@ -80,7 +82,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .header-wrapper {
   height: 1.69rem;
-  width: 375px;
+  width: 3.75rem;
   background-image: url('../assets/img/enter-header.png');
   background-size: 100% 100%;
 }

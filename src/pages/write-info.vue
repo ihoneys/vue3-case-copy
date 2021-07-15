@@ -76,7 +76,7 @@
           <span class="label-icon">*</span>
           <span>关系</span>
         </div>
-        <div class="selected" style="padding-right: 8px" @click="show = !show">
+        <div class="selected" style="padding-right: .08rem" @click="show = !show">
           <span>{{
             othersRelation ? othersRelation : '请选择与患者关系'
           }}</span>
@@ -174,7 +174,7 @@
         </div>
         <div
           class="selected"
-          style="padding-right: 8px"
+          style="padding-right: .08rem"
           @click="handleDischargeTime('inHosTime')"
         >
           <span>{{ inHosTime ? inHosTime : '请选择入院时间' }}</span>
@@ -188,7 +188,7 @@
         </div>
         <div
           class="selected"
-          style="padding-right: 8px"
+          style="padding-right: .08rem"
           @click="handleDischargeTime('outHosTime')"
         >
           <span>{{ outHosTime ? outHosTime : '请选择出院时间' }}</span>
@@ -260,7 +260,7 @@ import {
   checkPhone,
   checkIdCard,
   createDialog,
-  validateFunc
+  validateFunc,
 } from '../utils/utils';
 
 import {
@@ -280,7 +280,7 @@ const buttonContext = [
     text: '下一步',
     styleBtn: {
       background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-      boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
+      boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
       color: '#fff',
     },
   },
@@ -297,16 +297,17 @@ export default defineComponent({
     const router = useRouter();
     const route = useRoute();
     console.log(route.query);
-    const { recordId } = route.query;
+    const { recordId, applyStatus } = route.query;
     const { getters, commit, state: storeState, dispatch } = useStore();
 
     const {
       getIsMyself: isMyself,
       getNewWriteInfo: writeInfo,
       getRequestParams: requestParams,
+      getIsResetWrite: isResetWrite
     } = getters;
 
-    if (recordId) {
+    if (isResetWrite) {
       getApplyRecordContext(recordId)
         .then((result) => {
           console.log(result);
@@ -336,6 +337,7 @@ export default defineComponent({
       isSelected,
       feedback,
       hosNo,
+      id,
     } = newWriteInfo;
 
     const { unitId, userId, openId } = requestParams;
@@ -362,11 +364,11 @@ export default defineComponent({
       outHosTime, // 出院时间
       isSelected, // 是否勾选
       feedback,
+      id, //主键id
       showDate: false,
       show: false,
       typeTime: 'inHosTime',
       curDate: new Date(),
-      newWriteInfoList: newWriteInfo,
       submissionDate: '',
     });
 
@@ -389,6 +391,7 @@ export default defineComponent({
         state.outHosTime = cur.outHosTime;
         state.feedback = cur.feedback;
         state.hosNo = cur.hosNo;
+        state.id = cur.id
       },
       {
         deep: true,
@@ -397,8 +400,7 @@ export default defineComponent({
 
     const handleTabsItem = (i) => {
       curIndex.value = i;
-      steps.value = defineSteps(!i);
-      dispatch('changeIsMyselfAction', i);
+      steps.value = defineSteps(!i);     
     };
 
     const handleDischargeTime = (type) => {
@@ -498,12 +500,18 @@ export default defineComponent({
         inHosTime: state.inHosTime,
         outHosTime: state.outHosTime,
         inHosArea: state.hospitalName,
-        applyType: !!curIndex,
+        applyType: !(!!curIndex.value),
         remark: state.feedback,
         userId,
         openId,
         unitId,
       };
+
+      // 补充资料进入
+      if (recordId) {
+        patientData.applyStatus = applyStatus;
+        patientData.id = state.id;
+      }
 
       const ohtersData = {
         clientIdCardCons:
@@ -517,10 +525,14 @@ export default defineComponent({
         clientNameRelation: state.othersRelation,
         clientPhone: state.othersPhone,
       };
-      return !!curIndex ? patientData : Object.assign(patientData, ohtersData);
+      console.log(!!curIndex.value,5646456)
+      return !(!!curIndex.value) ? patientData : Object.assign(patientData, ohtersData);
     };
 
     const handleNext = async () => {
+      
+      
+
       if (!validatePatientFrom()) return;
       if (curIndex.value === 1) {
         if (!validateOthersFrom()) return;
@@ -530,6 +542,8 @@ export default defineComponent({
         return;
       }
       const data = saveData();
+      console.log(data)
+      // return
       const res = await saveApplyRecord(data);
       if (res.data) {
         commit('changeApplyRecordId', res.data);
@@ -537,11 +551,12 @@ export default defineComponent({
       // 提交成功时间
       state.submissionDate = getYearsMonthDay(true);
       commit('changeWriteInfo', toRaw(state));
+      commit('changeIsMyself', curIndex.value);
       Toast.clear();
       setTimeout(() => {
         const nextPath = curIndex.value === 1 ? '/signture' : '/copy';
         router.push(nextPath);
-      });
+      });      
     };
 
     const validatePatientFrom = () => {
@@ -659,7 +674,7 @@ export default defineComponent({
 }
 .write-wrapper {
   background-color: #f5f5f5;
-  padding-bottom: 66px;
+  padding-bottom: .66rem;
 }
 .tabs-wrapper {
   display: flex;
@@ -681,20 +696,20 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 44px;
-  border-bottom: 1px solid #f5f5f5;
+  min-height: .44rem;
+  border-bottom: .01rem solid #f5f5f5;
   background-color: #fff;
-  font-size: 16px !important;
+  font-size: .16rem !important;
   & :deep() .van-field__control {
     text-align: right !important;
   }
 
   .column-item-left {
-    width: 165px;
+    width: 1.65rem;
   }
 }
 .colum-wrapper {
-  padding-left: 15px;
+  padding-left: .15rem;
   .column-upload {
     display: flex;
     flex-direction: column;
@@ -704,21 +719,21 @@ export default defineComponent({
 
   .uploader-wrapper {
     display: flex;
-    padding-right: 10px;
+    padding-right: .1rem;
     .positive-img {
       & :deep() .van-uploader__upload {
         background-image: url('../assets/img/positive.png');
         background-size: 100%;
       }
     }
-    .reverse-img{
-       & :deep() .van-uploader__upload {
+    .reverse-img {
+      & :deep() .van-uploader__upload {
         background-image: url('../assets/img/reverse.png');
         background-size: 100%;
       }
     }
     .hand-img {
-       & :deep() .van-uploader__upload {
+      & :deep() .van-uploader__upload {
         background-image: url('../assets/img/hand.png');
         background-size: 100%;
       }
@@ -732,12 +747,12 @@ export default defineComponent({
       align-items: center;
 
       & :deep() .van-uploader__upload {
-        width: 108px !important;
-        height: 68px !important;
+        width: 1.08rem !important;
+        height: .68rem !important;
       }
       & :deep() .van-uploader__preview-image {
-        width: 108px !important;
-        height: 68px !important;
+        width: 1.08rem !important;
+        height: .68rem !important;
       }
     }
     .card-name {
@@ -752,12 +767,12 @@ export default defineComponent({
   font-size: 0.12rem;
 }
 .column-upload-label {
-  height: 44px;
-  line-height: 44px;
+  height: .44rem;
+  line-height: .44rem;
 }
 .next-icon {
-  width: 24px;
-  height: 24px;
+  width: .24rem;
+  height: .24rem;
 }
 .selected {
   display: flex;
@@ -773,23 +788,23 @@ export default defineComponent({
 }
 .remarks-text {
   width: 98.5%;
-  height: 80px;
+  height: .8rem;
   background-color: #f5f5f5;
-  border: 1px solid #dedede;
-  border-radius: 4px;
-  padding: 10px;
+  border: .01rem solid #dedede;
+  border-radius: .04rem;
+  padding: .1rem;
   box-sizing: border-box;
-  margin-top: 10px;
+  margin-top: .1rem;
 }
 .agreement-wrapper {
   display: flex;
   align-items: center;
-  padding: 15px;
+  padding: .15rem;
   background-color: #fff;
   .agreement {
     color: #666666;
     font-size: 0.12rem;
-    margin-left: 10px;
+    margin-left: .1rem;
   }
   .protocol {
     color: #00c6b8;
@@ -798,6 +813,6 @@ export default defineComponent({
 }
 .wrapper-record {
   background-color: #fff;
-  padding-left: 15px;
+  padding-left: .15rem;
 }
 </style>

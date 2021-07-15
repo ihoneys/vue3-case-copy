@@ -32,8 +32,8 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .radio {
-  width: 20px;
-  height: 20px;
+  width: .2rem;
+  height: .2rem;
   display: block;
 }
 </style>

@@ -68,7 +68,7 @@ const buttonContext = [
     text: "下一步",
     styleBtn: {
       background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
-      boxShadow: "0px 4px 6px 0px rgba(0,155,143,0.17)",
+      boxShadow: "0rem .04rem .06rem 0rem rgba(0,155,143,0.17)",
       color: "#fff",
     },
   },
@@ -88,8 +88,6 @@ export default defineComponent({
 
     const { unitId } = requestParams
     const { copyContent, copyPurpose, printNums, insuranceLocation } = copyPageData
-
-
 
     const state = reactive({
       insuranceLocation,
@@ -119,22 +117,31 @@ export default defineComponent({
 
 
       const findIncludes = (arr, content) => {
-
+        let indexArr = []
         const contentArr = content.split(",")
         contentArr.forEach(key => {
           const keyIndex = arr.findIndex(item => item.name === key)
-          console.log(keyIndex)
+          if (keyIndex !== -1) {
+            indexArr.push(keyIndex)
+          }
         })
+        return indexArr
       }
       if (isResetWrite) {
         const { data } = await getCopyPurposeContent(applyId)
+        console.log(data)
         state.insuranceLocation = data.reimbursementAddress
         state.printNums = data.printingSheetsNumber
-        findIncludes(state.copyContent, data.copyContent)
-        // 2021-7-13
+        const copyContentSelected = findIncludes(state.copyContent, data.copyContent)
+        const copyPurposeSelected = findIncludes(state.copyPurpose, data.copyPurpose)
+        copyContentSelected.forEach(index => {
+          state.copyContent[index].checked = true
+        })
+
+        copyPurposeSelected.forEach(index => {
+          state.copyPurpose[index].checked = true
+        })
       }
-
-
     }
 
     const getCopyCotent = async () => {
@@ -280,23 +287,23 @@ export default defineComponent({
       align-items: center;
     }
     .count {
-      width: 20px;
-      height: 20px;
+      width: .2rem;
+      height: .2rem;
       border-radius: 50%;
       text-align: center;
-      line-height: 20px;
-      border: 1.5px solid #666;
+      line-height: .2rem;
+      border: .015rem solid #666;
       color: #666;
       font-weight: bold;
     }
     .numbers {
-      width: 40px;
+      width: .4rem;
       text-align: center;
     }
   }
   .next-icon {
-    width: 24px;
-    height: 24px;
+    width: .24rem;
+    height: .24rem;
   }
   .selected {
     display: flex;
@@ -307,13 +314,13 @@ export default defineComponent({
   .location-wrapper {
     display: flex;
     align-items: center;
-    height: 44px;
-    margin: 30px 0;
-    border-bottom: 1px solid #f5f5f5;
+    height: .44rem;
+    margin: .3rem 0;
+    border-bottom: .01rem solid #f5f5f5;
   }
 }
 .over-reduce {
   color: #cccccc !important;
-  border: 1.5px solid #cccccc !important;
+  border: .015rem solid #cccccc !important;
 }
 </style>

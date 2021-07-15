@@ -7,7 +7,7 @@
       finished-text="没有更多了"
       @load="onLoad"
     >
-      <div class="record-column" v-for="(item, i) in list" :key="i">
+      <div class="record-column" v-for="item in computedList" :key="item.id">
         <ul
           :class="[
             'column-list',
@@ -28,10 +28,9 @@
         </ul>
         <div class="button-wrapper" v-if="isShowBtn(item.applyStatus)">
           <template v-if="item.applyStatus === 2">
-            <button class="button-item black" @click="canleOrderBtn(item)">
-              取消订单
+            <button class="button-item orange" @click="toPayBtn(item)">
+              支付
             </button>
-            <button class="button-item orange" @click="toPayBtn">支付</button>
           </template>
 
           <button
@@ -52,7 +51,7 @@
           <button
             v-else-if="item.applyStatus === 8"
             class="button-item orange"
-            @click="handleLogistics"
+            @click="handleLogistics(item)"
           >
             查看物流
           </button>
@@ -66,7 +65,7 @@
           <button
             v-else-if="item.applyStatus === 10"
             class="button-item black"
-            @click="handleDetail"
+            @click="handleItem(item)"
           >
             查看详情
           </button>
@@ -90,7 +89,7 @@ import { useStore } from 'vuex';
 
 import {
   toPay,
-  canleApplyMethod,
+  cancelApplyMethod,
   resetWriteInfo,
   checkLogistics,
 } from '@/utils/commonOrder';
@@ -142,8 +141,9 @@ const statusObj = {
 export default defineComponent({
   name: 'record',
   setup() {
-    const reload = inject('reload');
-    const { commit } = useStore();
+    const { commit, getters } = useStore();
+    const { getRequestParams: requestParams } = getters;
+    const { unitId, openId, userId } = requestParams;
     const router = useRouter();
     const state = reactive({
       loading: false,
@@ -158,6 +158,7 @@ export default defineComponent({
       userId: 22,
     };
 
+    // 加载数据
     const onLoad = async () => {
       params.currentPage++;
       const res = await getRecordList(params);
@@ -172,6 +173,12 @@ export default defineComponent({
       }
     };
 
+    // 缓存订单数据列表
+    const computedList = computed(() => {
+      return state.list;
+    });
+
+    // 是否有按钮显示
     const isShowBtn = computed(() => {
       return (status) => {
         return (
@@ -185,6 +192,7 @@ export default defineComponent({
       };
     });
 
+    // 查看详情
     const handleItem = ({ id }) => {
       router.push({
         name: 'detail',
@@ -193,26 +201,33 @@ export default defineComponent({
         },
       });
     };
-    const toPayBtn = () => {
-      toPay();
+
+    // 去支付
+    const toPayBtn = ({ id, prepaidFees }) => {
+      toPay({ unitId, openId, userId, applyId: id, payAmount: prepaidFees });
     };
 
+    // 取消订单
     const canleOrderBtn = ({ id }) => {
-      // canleApplyMethod(id);
-      setTimeout(() => {
-        reload();
-      }, 1500);
+      const updateStatus = () => {
+        const index = state.list.findIndex((item) => item.id === id);
+        state.list[index].applyStatus = 3;
+      };
+
+      canleApplyMethod(id, updateStatus);
     };
 
     // 补充资料
-    const handleSupplement = ({ id }) => {
-      resetWriteInfo(router, commit, id);
+    const handleSupplement = ({ id, applyStatus }) => {
+      resetWriteInfo(router, commit, id, applyStatus);
     };
 
-    const handleLogistics = () => {
-      checkLogistics();
+    // 查看物流
+    const handleLogistics = ({ expressNo }) => {
+      checkLogistics(expressNo);
     };
 
+    // 查看自提点
     const handleTakeNothing = ({ id }) => {
       console.log('查看自提地点');
       router.push({
@@ -223,13 +238,11 @@ export default defineComponent({
       });
     };
 
-    const handleDetail = () => {
-      console.log('查看详情');
-    };
     return {
       ...toRefs(state),
       statusObj,
       isShowBtn,
+      computedList,
       onLoad,
       handleItem,
       toPayBtn,
@@ -237,7 +250,6 @@ export default defineComponent({
       handleSupplement,
       handleLogistics,
       handleTakeNothing,
-      handleDetail,
     };
   },
 });
@@ -256,7 +268,7 @@ export default defineComponent({
   font-size: 0.14rem;
   border-top-left-radius: 0.06rem;
   border-top-right-radius: 0.06rem;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: .01rem solid #f5f5f5;
   li {
     display: flex;
     align-items: center;
@@ -303,6 +315,6 @@ export default defineComponent({
 }
 .record-column {
   border-bottom: 0.01rem solid #f5f5f5;
-  margin-bottom: 10px;
+  margin-bottom: .1rem;
 }
 </style>

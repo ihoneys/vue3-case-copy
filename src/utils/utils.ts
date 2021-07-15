@@ -1,4 +1,4 @@
-import { Dialog } from "vant";
+import { Dialog, Toast } from "vant";
 import CryptoJS from "crypto-js"
 export function isObjEmpty(obj: any): boolean {
     return (
@@ -74,17 +74,28 @@ export function checkIdCard(value: string): boolean {
     return !(/(^\d{8}(0\d|10|11|12)([0-2]\d|30|31)\d{3}$)|(^\d{6}(18|19|20)\d{2}(0\d|10|11|12)([0-2]\d|30|31)\d{3}(\d|X|x)$)/.test(value))
 }
 
-export function createDialog(message: string): void {
+export function createDialog(message: string, callBack = () => { }): void {
     Dialog({
         title: "提示",
         message,
-        confirmButtonColor: "#00C6B8"
+        confirmButtonColor: "#00C6B8",
+    }).then(callBack)
+}
+
+export function createToast(message: string, type: any, callBack = () => { }): void {
+    Toast({
+        type,
+        message,
+        onClose() {
+            callBack()
+        }
     })
 }
 
+
 export function getUrlParams(): any {
     let hre = decodeURIComponent(window.location.href)
-     hre = hre.replace(/\s/g,"");
+    hre = hre.replace(/\s/g, "");
     let query = hre.split('?')[1]
     let obj = {}
     if (query) {
@@ -118,7 +129,7 @@ export function aseDecrypt(encryptedStr) {
     let base64 = CryptoJS.enc.Base64.parse(encryptedStr);
     let src = CryptoJS.enc.Base64.stringify(base64);
     let decrypt = CryptoJS.AES.decrypt(src, key, {
-        iv : [],
+        iv: [],
         mode: CryptoJS.mode.ECB,
         padding: CryptoJS.pad.Pkcs7
     });

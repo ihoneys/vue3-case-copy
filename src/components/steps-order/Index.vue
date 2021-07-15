@@ -123,7 +123,7 @@ export default defineComponent({
       state.failReason = props.failReason;
       state.statusCode = props.statusCode
     });
-    console.log(state.statusCode)
+
     if (state.statusCode === 6 || state.statusCode === 7) {
       orderSteps[2].title = '审核失败';
       orderSteps[2].fillIcon = steps2_err;

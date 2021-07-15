@@ -1,10 +1,11 @@
 <template>
   <!-- <router-view v-if="isRouterAlive" /> -->
-  <router-view v-if="isRouterAlive" v-slot="{ Component }">
+  <!-- <router-view v-if="isRouterAlive" v-slot="{ Component }">
     <keep-alive :include="includeList">
       <component :is="Component" />
     </keep-alive>
-  </router-view>
+  </router-view> -->
+  <router-view />
 </template>
 
 <script lang="ts">

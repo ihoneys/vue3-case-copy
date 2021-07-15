@@ -30,13 +30,13 @@ export default defineComponent({
   left: 50%;
   transform: translate(-50%, -50%);
   color: #707070;
-  font-size: 14px;
+  font-size: .14rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   img {
-    width: 240px;
-    height: 179px;
+    width: 2.4rem;
+    height: 1.79rem;
   }
 }
 </style>

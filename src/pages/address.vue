@@ -49,7 +49,7 @@ import BottomButton from "@/components/bottom-button/Index.vue"
 const buttonContext = [{
   text: "新增地址", styleBtn: {
     background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-    boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
+    boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
     color: '#fff',
   },
 }]
@@ -105,7 +105,7 @@ export default defineComponent({
 .address-wrapper {
   background-color: #f5f5f5;
   min-height: 100vh;
-  padding: 10px 12px;
+  padding: .1rem .12rem;
   box-sizing: border-box;
   .address-flex {
     display: flex;
@@ -119,29 +119,29 @@ export default defineComponent({
   .address-li {
     display: flex;
     flex-direction: column;
-    margin-bottom: 10px;
-    padding: 20px 15px;
-    border-radius: 6px;
+    margin-bottom: .1rem;
+    padding: .2rem .15rem;
+    border-radius: .06rem;
   }
   .address-content {
-    font-size: 14px;
+    font-size: .14rem;
     color: #666666;
     width: 90%;
-    line-height: 20px;
-    margin-top: 6px;
+    line-height: .2rem;
+    margin-top: .06rem;
   }
   .edit-icon {
-    width: 14px;
-    height: 14px;
+    width: .14rem;
+    height: .14rem;
   }
   .address-name {
-    font-size: 16px;
+    font-size: .16rem;
     font-weight: bold;
   }
   .address-phone {
     font-weight: bold;
-    font-size: 14px;
-    margin-left: 15px;
+    font-size: .14rem;
+    margin-left: .15rem;
   }
   .without {
     position: absolute;
@@ -149,20 +149,20 @@ export default defineComponent({
     left: 50%;
     transform: translate(-50%, -50%);
     color: #707070;
-    font-size: 14px;
+    font-size: .14rem;
     img {
-      width: 240px;
-      height: 179px;
+      width: 2.4rem;
+      height: 1.79rem;
     }
   }
   .default-class {
-    font-size: 10px;
+    font-size: .1rem;
     border: 0.01rem solid #00c6b8;
     background-color: #f0fcfb;
     color: #00c6b8;
-    border-radius: 4px;
-    padding: 2px 4px;
-    margin-right: 10px;
+    border-radius: .04rem;
+    padding: .02rem .04rem;
+    margin-right: .1rem;
   }
 }
 </style>

@@ -53,7 +53,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const state = reactive({
       buttonContext: props.buttonContext,
-      isSingle:props.isSingle,
+      isSingle: props.isSingle,
     });
     const handleDefault = debounce(
       () => {
@@ -64,6 +64,7 @@ export default defineComponent({
     );
     watchEffect(() => {
       state.buttonContext = props.buttonContext;
+      state.isSingle = props.isSingle;
     });
     const handleLeft = debounce(
       () => {
@@ -102,7 +103,7 @@ export default defineComponent({
     font-size: 0.16rem;
   }
   .marign-right {
-    margin-right: 10px;
+    margin-right: .1rem;
   }
 }
 </style>

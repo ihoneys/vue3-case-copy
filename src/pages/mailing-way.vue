@@ -46,7 +46,9 @@
         </div>
         <div class="take-address">
           {{ takeAddress.pickUpAddress }} 备注：<br />
-          电话：{{takeAddress.contactPhone}} 取件时间：工作日：{{ takeAddress.pickUpTime }}
+          电话：{{ takeAddress.contactPhone }} 取件时间：工作日：{{
+            takeAddress.pickUpTime
+          }}
         </div>
       </template>
       <div class="user-tips">
@@ -86,6 +88,7 @@ import {
   getExpressCompany,
   saveMailingData,
   getTakeAddress,
+  getCollectionMethod,
 } from '@/service/api';
 
 const buttonContext = [
@@ -116,6 +119,7 @@ export default defineComponent({
       getMailingAddress: mailingObject,
       getUpdateAddress: addressInfo,
       getApplyRecordId: recordId,
+      getIsResetWrite: isResetWrite,
     } = getters;
 
     const { unitId } = requestParams;
@@ -157,6 +161,15 @@ export default defineComponent({
           columns.value.push(data[key]);
         }
       }
+
+      if (isResetWrite) {
+        const { data } = await getCollectionMethod(1078);
+        if (!isObjEmpty(data)) {
+          checked.value = data.collectionMethod ? '1' : '2';
+          expressCompany.value = data.expressCompany
+          takeAddress.value = data.expressAddress
+        }
+      }
     });
 
     const handleAddress = () => {
@@ -164,9 +177,8 @@ export default defineComponent({
     };
 
     const handleNext = () => {
-      nextSaveData()
+      nextSaveData();
       commitChangeMailingAddress();
-      
     };
 
     const nextSaveData = async () => {
@@ -180,10 +192,10 @@ export default defineComponent({
       if (checked.value === '2') {
         postData.pickUpAddress = `${takeAddress.value.pickUpAddress}备注：电话：${takeAddress.value.contactPhone} 取件时间：工作日：${takeAddress.value.pickUpTime}`;
       }
-      const {returnCode} = await saveMailingData(postData);
+      const { returnCode } = await saveMailingData(postData);
 
-      if(returnCode === 0) {
-        router.push('/payOrder')
+      if (returnCode === 0) {
+        router.push('/payOrder');
       }
     };
 

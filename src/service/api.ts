@@ -106,6 +106,16 @@ export const saveMatterContent = (data) => {
     })
 }
 
+// 根据申请id获取委托书
+
+export const getPowerAttorney = (applyId) => {
+    return request({
+        method: "get",
+        url: `/powerAttorney/get/${applyId}`,
+    })
+}
+
+
 // 复印用途保存
 export const saveCopyContent = (data) => {
     return request({
@@ -175,6 +185,15 @@ export const saveMailingData = (data) => {
     })
 }
 
+// 根据申请id获取领取方式内容
+export const getCollectionMethod = (applyId) => {
+    return request({
+        method: "get",
+        url: `/collectionMethod/get/${applyId}`,
+    })
+}
+
+
 // 取消申请
 export const cancelApply = (params) => {
     return request({
@@ -206,6 +225,7 @@ export const getRecordList = (params) => {
 }
 
 
+// 院内自取地址
 export const getPickUpAddress = (applyId) => {
     return request({
         method: "get",
@@ -214,6 +234,37 @@ export const getPickUpAddress = (applyId) => {
 }
 
 
+// 跳转支付
+export const payOrder = (data) => {
+    return request({
+        method: "post",
+        url: `/trade/pay`,
+        data,
+    })
+}
+
+
+// 确认收件
+export const checkPayOrder = (applyId) => {
+    return request({
+        method: "post",
+        url: `/trade/queryPayStatus`,
+        data: {
+            applyId
+        },
+    })
+}
+
+
+export const confirmReceipt = (id) => {
+    return request({
+        method: "put",
+        url: `/applyRecord/confirmReceipt`,
+        params: {
+            id
+        },
+    })
+}
 
 
 

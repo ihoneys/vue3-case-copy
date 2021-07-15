@@ -11,7 +11,8 @@ import MailingWay from '@/pages/mailing-way.vue'
 import Record from '@/pages/record.vue'
 import Signture from '@/pages/signture.vue'
 import Write from '@/pages/write-info.vue'
-import takeAddress from '@/pages/take-address.vue'
+import TakeAddress from '@/pages/take-address.vue'
+import CheckPay from '@/pages/check-pay.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -76,7 +77,12 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/takeAddress',
         name: 'takeAddress',
-        component: takeAddress,
+        component: TakeAddress,
+    },
+    {
+        path: '/checkPay',
+        name: 'checkPay',
+        component: CheckPay,
     },
 
 ]

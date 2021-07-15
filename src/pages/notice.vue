@@ -26,7 +26,7 @@ const buttonContext = [
     text: '下一步',
     styleBtn: {
       background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-      boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
+      boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
       color: '#fff',
     },
   },
@@ -47,12 +47,7 @@ export default defineComponent({
       content.value = data;
     });
     const handleNext = () => {
-      router.push({
-        name: 'write',
-        query: {
-          recordId: '10',
-        },
-      });
+      router.push('/write');
     };
     return {
       buttonContext,

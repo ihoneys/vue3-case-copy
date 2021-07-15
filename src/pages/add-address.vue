@@ -11,7 +11,7 @@
       </li>
       <li class="column-item" @click="show = true">
         <div class="column-label">所在地区</div>
-        <div class="selected" style="padding-right: 8px">
+        <div class="selected" style="padding-right: .08rem">
           <span>{{ area ? area : " 请选择省市区县、乡镇等" }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
@@ -64,7 +64,7 @@ const columns = ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '�
 const buttonContext = [{
   text: "新增地址", styleBtn: {
     background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-    boxShadow: '0px 4px 6px 0px rgba(0,155,143,0.17)',
+    boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
     color: '#fff',
   },
 }]
@@ -177,21 +177,21 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 45px;
+  height: .45rem;
   background-color: #fff;
-  padding-left: 15px;
+  padding-left: .15rem;
   box-sizing: border-box;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: .01rem solid #f5f5f5;
   & :deep() .van-field__control {
     text-align: right !important;
   }
   & :deep() input::-webkit-input-placeholder {
-    font-size: 15px;
+    font-size: .15rem;
     color: #999999;
   }
   .next-icon {
-    width: 24px;
-    height: 24px;
+    width: .24rem;
+    height: .24rem;
   }
   .selected {
     display: flex;
@@ -202,9 +202,9 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px;
+  padding: .15rem;
   background-color: #fff;
-  margin-top: 10px;
+  margin-top: .1rem;
 }
 .set-default-left {
   display: flex;
@@ -213,9 +213,9 @@ export default defineComponent({
 
 .tips-content {
   color: #999999;
-  font-size: 12px;
+  font-size: .12rem;
 }
 .column-label {
-  width: 100px;
+  width: 1rem;
 }
 </style>
