@@ -83,13 +83,16 @@ export function createDialog(message: string, callBack = () => { }): void {
 }
 
 export function createToast(message: string, type: any, callBack = () => { }): void {
-    Toast({
-        type,
-        message,
-        onClose() {
-            callBack()
-        }
-    })
+    setTimeout(() => {
+        Toast({
+            type,
+            message,
+            duration: 2000,
+            onClose() {
+                callBack()
+            }
+        })
+    }, 50)
 }
 
 

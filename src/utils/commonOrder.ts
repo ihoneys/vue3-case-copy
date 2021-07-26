@@ -30,6 +30,7 @@ export async function toPay(payPost: PayParams, successCallBack = () => { }, fai
         })
     } else {
         createToast('支付失败', 'fail', failCallBack)
+        console.log('支付失败')
     }
 
 }

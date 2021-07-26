@@ -1,10 +1,12 @@
 import { createStore, createLogger } from "vuex"
+import createPersistedState from 'vuex-persistedstate'
+
 import mutations from "./mutations"
 import * as actions from "./actions"
 import * as getters from "./getters"
 
 const debug = process.env.NODE_ENV !== 'production'
-// initial state
+
 interface CurCopyData {
     printNums: number,
     insuranceLocation: string,
@@ -48,7 +50,7 @@ const state = {
     requestParams: {
         userId: 22,
         openId: 33,
-        unitId: 11,
+        unitId: 333,
     },
     writeInfo: {
         isMyself: 0,
@@ -88,12 +90,18 @@ const state = {
     }
 }
 
+
+const storePlugins = [createPersistedState({ storage: window.sessionStorage })]
+
+if (debug) {
+    storePlugins.push(createLogger())
+}
+
 export default createStore({
     state,
     mutations,
     actions,
     getters,
     strict: debug,
-    plugins: debug ? [createLogger()] : []
+    plugins: storePlugins
 })
-

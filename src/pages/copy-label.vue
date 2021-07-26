@@ -282,6 +282,9 @@ export default defineComponent({
     display: flex;
     align-items: center;
     justify-content: space-between;
+    border-bottom: .01rem solid #f5f5f5;
+    height: .44rem;
+    margin-top: .3rem;
     .count-wrapper {
       display: flex;
       align-items: center;

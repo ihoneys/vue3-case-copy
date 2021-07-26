@@ -1,23 +1,32 @@
 <template>
-  <div class="without" v-if="!isShow">
+  <div class="without" v-if="isShow">
     <img src="@/assets/img/no-data.png" alt="" />
-    <div>暂无地址可选</div>
+    <div>{{ description }}</div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref, watchEffect } from 'vue';
 export default defineComponent({
-  name: "widhtout",
+  name: 'widhtout',
   props: {
     isShow: {
       type: Boolean,
-      default: () => true,
+      default: () => false,
+    },
+    description: {
+      type: String,
+      default: () => '暂无地址可选',
     },
   },
   setup(props) {
+    console.log(props.isShow);
+    const isShow = ref(true);
+    watchEffect(() => {
+      isShow.value = props.isShow;
+    });
     return {
-      isShow: props.isShow,
+      isShow,
     };
   },
 });
@@ -30,7 +39,7 @@ export default defineComponent({
   left: 50%;
   transform: translate(-50%, -50%);
   color: #707070;
-  font-size: .14rem;
+  font-size: 0.14rem;
   display: flex;
   flex-direction: column;
   align-items: center;

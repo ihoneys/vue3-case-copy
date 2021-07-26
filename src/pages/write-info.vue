@@ -76,7 +76,11 @@
           <span class="label-icon">*</span>
           <span>关系</span>
         </div>
-        <div class="selected" style="padding-right: .08rem" @click="show = !show">
+        <div
+          class="selected"
+          style="padding-right: 0.08rem"
+          @click="show = !show"
+        >
           <span>{{
             othersRelation ? othersRelation : '请选择与患者关系'
           }}</span>
@@ -174,7 +178,7 @@
         </div>
         <div
           class="selected"
-          style="padding-right: .08rem"
+          style="padding-right: 0.08rem"
           @click="handleDischargeTime('inHosTime')"
         >
           <span>{{ inHosTime ? inHosTime : '请选择入院时间' }}</span>
@@ -188,7 +192,7 @@
         </div>
         <div
           class="selected"
-          style="padding-right: .08rem"
+          style="padding-right: 0.08rem"
           @click="handleDischargeTime('outHosTime')"
         >
           <span>{{ outHosTime ? outHosTime : '请选择出院时间' }}</span>
@@ -304,7 +308,7 @@ export default defineComponent({
       getIsMyself: isMyself,
       getNewWriteInfo: writeInfo,
       getRequestParams: requestParams,
-      getIsResetWrite: isResetWrite
+      getIsResetWrite: isResetWrite,
     } = getters;
 
     if (isResetWrite) {
@@ -391,7 +395,7 @@ export default defineComponent({
         state.outHosTime = cur.outHosTime;
         state.feedback = cur.feedback;
         state.hosNo = cur.hosNo;
-        state.id = cur.id
+        state.id = cur.id;
       },
       {
         deep: true,
@@ -400,7 +404,7 @@ export default defineComponent({
 
     const handleTabsItem = (i) => {
       curIndex.value = i;
-      steps.value = defineSteps(!i);     
+      steps.value = defineSteps(!i);
     };
 
     const handleDischargeTime = (type) => {
@@ -500,7 +504,7 @@ export default defineComponent({
         inHosTime: state.inHosTime,
         outHosTime: state.outHosTime,
         inHosArea: state.hospitalName,
-        applyType: !(!!curIndex.value),
+        applyType: !!!curIndex.value,
         remark: state.feedback,
         userId,
         openId,
@@ -525,14 +529,13 @@ export default defineComponent({
         clientNameRelation: state.othersRelation,
         clientPhone: state.othersPhone,
       };
-      console.log(!!curIndex.value,5646456)
-      return !(!!curIndex.value) ? patientData : Object.assign(patientData, ohtersData);
+      console.log(!!curIndex.value, 5646456);
+      return !!!curIndex.value
+        ? patientData
+        : Object.assign(patientData, ohtersData);
     };
 
     const handleNext = async () => {
-      
-      
-
       if (!validatePatientFrom()) return;
       if (curIndex.value === 1) {
         if (!validateOthersFrom()) return;
@@ -542,7 +545,7 @@ export default defineComponent({
         return;
       }
       const data = saveData();
-      console.log(data)
+      console.log(data);
       // return
       const res = await saveApplyRecord(data);
       if (res.data) {
@@ -556,7 +559,7 @@ export default defineComponent({
       setTimeout(() => {
         const nextPath = curIndex.value === 1 ? '/signture' : '/copy';
         router.push(nextPath);
-      });      
+      });
     };
 
     const validatePatientFrom = () => {
@@ -674,7 +677,7 @@ export default defineComponent({
 }
 .write-wrapper {
   background-color: #f5f5f5;
-  padding-bottom: .66rem;
+  padding-bottom: 0.66rem;
 }
 .tabs-wrapper {
   display: flex;
@@ -696,20 +699,20 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: .44rem;
-  border-bottom: .01rem solid #f5f5f5;
+  min-height: 0.44rem;
+  border-bottom: 0.01rem solid #f5f5f5;
   background-color: #fff;
-  font-size: .16rem !important;
+  font-size: 0.16rem !important;
   & :deep() .van-field__control {
     text-align: right !important;
   }
 
   .column-item-left {
-    width: 1.65rem;
+    width: 1.7rem;
   }
 }
 .colum-wrapper {
-  padding-left: .15rem;
+  padding-left: 0.15rem;
   .column-upload {
     display: flex;
     flex-direction: column;
@@ -719,7 +722,7 @@ export default defineComponent({
 
   .uploader-wrapper {
     display: flex;
-    padding-right: .1rem;
+    padding-right: 0.1rem;
     .positive-img {
       & :deep() .van-uploader__upload {
         background-image: url('../assets/img/positive.png');
@@ -748,11 +751,11 @@ export default defineComponent({
 
       & :deep() .van-uploader__upload {
         width: 1.08rem !important;
-        height: .68rem !important;
+        height: 0.68rem !important;
       }
       & :deep() .van-uploader__preview-image {
         width: 1.08rem !important;
-        height: .68rem !important;
+        height: 0.68rem !important;
       }
     }
     .card-name {
@@ -767,12 +770,13 @@ export default defineComponent({
   font-size: 0.12rem;
 }
 .column-upload-label {
-  height: .44rem;
-  line-height: .44rem;
+  height: 0.44rem;
+  line-height: 0.44rem;
+  font-size: 0.16rem;
 }
 .next-icon {
-  width: .24rem;
-  height: .24rem;
+  width: 0.24rem;
+  height: 0.24rem;
 }
 .selected {
   display: flex;
@@ -788,23 +792,26 @@ export default defineComponent({
 }
 .remarks-text {
   width: 98.5%;
-  height: .8rem;
+  height: 0.8rem;
   background-color: #f5f5f5;
-  border: .01rem solid #dedede;
-  border-radius: .04rem;
-  padding: .1rem;
+  border: 0.01rem solid #dedede;
+  border-radius: 0.04rem;
+  padding: 0.1rem;
   box-sizing: border-box;
-  margin-top: .1rem;
+  margin-top: 0.1rem;
+  & ::placeholder {
+    font-size: 20px;
+  }
 }
 .agreement-wrapper {
   display: flex;
   align-items: center;
-  padding: .15rem;
+  padding: 0.15rem;
   background-color: #fff;
   .agreement {
     color: #666666;
     font-size: 0.12rem;
-    margin-left: .1rem;
+    margin-left: 0.1rem;
   }
   .protocol {
     color: #00c6b8;
@@ -813,6 +820,6 @@ export default defineComponent({
 }
 .wrapper-record {
   background-color: #fff;
-  padding-left: .15rem;
+  padding-left: 0.15rem;
 }
 </style>

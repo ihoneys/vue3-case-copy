@@ -1,6 +1,7 @@
 <template>
   <div class="record-wrapper">
     <van-list
+      v-if="!isData"
       v-model:loading="loading"
       :finished="finished"
       offset="20"
@@ -72,6 +73,7 @@
         </div>
       </div>
     </van-list>
+    <WithoutData :isShow="isData" description="没有查询到记录" />
   </div>
 </template>
 
@@ -96,6 +98,9 @@ import {
 
 import { getRecordList } from '@/service/api';
 import { isObjEmpty } from '../utils/utils';
+
+import WithoutData from '@/components/without-data/Index.vue';
+
 const statusObj = {
   1: {
     color: '#FF9F4F',
@@ -140,22 +145,28 @@ const statusObj = {
 };
 export default defineComponent({
   name: 'record',
+  components: {
+    WithoutData,
+  },
   setup() {
     const { commit, getters } = useStore();
     const { getRequestParams: requestParams } = getters;
     const { unitId, openId, userId } = requestParams;
+
     const router = useRouter();
     const state = reactive({
       loading: false,
       finished: false,
       list: [] as any,
+      isData: false,
     });
+
     const params = {
       currentPage: 0,
-      openId: 33,
+      openId,
       pageSize: 10,
-      unitId: 11,
-      userId: 22,
+      unitId,
+      userId,
     };
 
     // 加载数据
@@ -170,6 +181,9 @@ export default defineComponent({
         }
       } else {
         state.finished = true;
+      }
+      if (!state.list.length) {
+        state.isData = true;
       }
     };
 
@@ -268,7 +282,7 @@ export default defineComponent({
   font-size: 0.14rem;
   border-top-left-radius: 0.06rem;
   border-top-right-radius: 0.06rem;
-  border-bottom: .01rem solid #f5f5f5;
+  border-bottom: 0.01rem solid #f5f5f5;
   li {
     display: flex;
     align-items: center;
@@ -315,6 +329,6 @@ export default defineComponent({
 }
 .record-column {
   border-bottom: 0.01rem solid #f5f5f5;
-  margin-bottom: .1rem;
+  margin-bottom: 0.1rem;
 }
 </style>

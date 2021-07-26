@@ -1,7 +1,7 @@
 <template>
   <div class="steps">
     <ul>
-      <HeaderSteps :steps="steps" :currentIndex="1" />
+      <HeaderSteps :steps="steps" :currentIndex="currentIndex" />
       <li class="column-flex">
         <div class="column-flex-left">
           <span class="label-icon">*</span>
@@ -243,6 +243,7 @@ export default defineComponent({
 .steps {
   background-color: #f5f5f5;
   min-height: 100vh;
+  font-size: .16rem;
 }
 .column-flex-left {
   width: 1.2rem;

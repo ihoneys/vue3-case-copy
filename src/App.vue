@@ -9,6 +9,7 @@
 </template>
 
 <script lang="ts">
+import { config } from 'process';
 import { defineComponent, nextTick, provide, ref } from 'vue';
 export default defineComponent({
   name: 'App',
@@ -32,15 +33,15 @@ export default defineComponent({
 
 <style lang="scss">
 .pd-r-15 {
-  padding-right: 15px;
+  padding-right: 0.15rem;
 }
 .pd-l-15 {
-  padding-left: 15px;
+  padding-left: 0.15rem;
 }
 .mt-10 {
-  margin-top: 10px;
+  margin-top: 0.1rem;
 }
 .mb-10 {
-  margin-bottom: 10px;
+  margin-bottom: 0.1rem;
 }
 </style>

@@ -25,7 +25,7 @@
       </div>
     </li>
   </ul>
-  <WithoutData :isShow="!addressList.length" />
+  <WithoutData :isShow="isData" />
   <BottomButton :buttonContext="buttonContext" @handleDefault="handleAdd" />
 </template>
 
@@ -37,14 +37,10 @@ import { useRouter } from 'vue-router';
 import { getAddressList } from '@/service/api';
 
 
-import WithoutData from "@/components/widthout-data/Index.vue"
+import WithoutData from "@/components/without-data/Index.vue"
 import BottomButton from "@/components/bottom-button/Index.vue"
+import { isObjEmpty } from '../utils/utils';
 
-
-// const addressList = [
-//   { id: 0, name: "啦啦啦", phone: "150231231231", address: "广东省深圳市南山区贝培大道锡山家园274" },
-//   { id: 1, name: "阿斯顿", phone: "18999992222", address: "广东省深圳市南山区贝培大道锡山家园274广东省深圳市南山区贝培大道锡山家园274广东省深圳市南山区贝培大道锡山家园274" },
-// ];
 
 const buttonContext = [{
   text: "新增地址", styleBtn: {
@@ -62,12 +58,20 @@ export default defineComponent({
   setup() {
     const { dispatch, getters, commit } = useStore()
     const { getRequestParams: requestParams } = getters
-    const router = useRouter()
     const { userId } = requestParams
+
+    const router = useRouter()
+
     const addressList = ref([])
+    const isData = ref(false)
+
     const getAddressListRequest = async () => {
       const { data } = await getAddressList(userId)
-      addressList.value = data
+      if (!isObjEmpty(data)) {
+        addressList.value = data
+      } else {
+        isData.value = true
+      }
     }
     onMounted(getAddressListRequest)
 
@@ -93,6 +97,7 @@ export default defineComponent({
     }
     return {
       addressList,
+      isData,
       buttonContext,
       handleItem,
       handleAdd,
@@ -105,7 +110,7 @@ export default defineComponent({
 .address-wrapper {
   background-color: #f5f5f5;
   min-height: 100vh;
-  padding: .1rem .12rem;
+  padding: 0.1rem 0.12rem;
   box-sizing: border-box;
   .address-flex {
     display: flex;
@@ -119,29 +124,29 @@ export default defineComponent({
   .address-li {
     display: flex;
     flex-direction: column;
-    margin-bottom: .1rem;
-    padding: .2rem .15rem;
-    border-radius: .06rem;
+    margin-bottom: 0.1rem;
+    padding: 0.2rem 0.15rem;
+    border-radius: 0.06rem;
   }
   .address-content {
-    font-size: .14rem;
+    font-size: 0.14rem;
     color: #666666;
     width: 90%;
-    line-height: .2rem;
-    margin-top: .06rem;
+    line-height: 0.2rem;
+    margin-top: 0.06rem;
   }
   .edit-icon {
-    width: .14rem;
-    height: .14rem;
+    width: 0.14rem;
+    height: 0.14rem;
   }
   .address-name {
-    font-size: .16rem;
+    font-size: 0.16rem;
     font-weight: bold;
   }
   .address-phone {
     font-weight: bold;
-    font-size: .14rem;
-    margin-left: .15rem;
+    font-size: 0.14rem;
+    margin-left: 0.15rem;
   }
   .without {
     position: absolute;
@@ -149,20 +154,20 @@ export default defineComponent({
     left: 50%;
     transform: translate(-50%, -50%);
     color: #707070;
-    font-size: .14rem;
+    font-size: 0.14rem;
     img {
       width: 2.4rem;
       height: 1.79rem;
     }
   }
   .default-class {
-    font-size: .1rem;
+    font-size: 0.1rem;
     border: 0.01rem solid #00c6b8;
     background-color: #f0fcfb;
     color: #00c6b8;
-    border-radius: .04rem;
-    padding: .02rem .04rem;
-    margin-right: .1rem;
+    border-radius: 0.04rem;
+    padding: 0.02rem 0.04rem;
+    margin-right: 0.1rem;
   }
 }
 </style>

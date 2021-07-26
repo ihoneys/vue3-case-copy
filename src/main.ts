@@ -10,9 +10,10 @@ import 'vant/lib/index.less'
 
 const app = createApp(App);
 
-// import VConsole from 'vconsole'
-// let vconsole = new VConsole()
-// export default vconsole
+import VConsole from 'vconsole'
+let vconsole = new VConsole()
+export default vconsole
+
 import { Progress, Button, Cell, Field, Picker, Popup, Switch, RadioGroup, Radio, Uploader, DatetimePicker, CountDown, Icon, Toast, Image, Area, Dialog, List, Form } from 'vant';
 
 app

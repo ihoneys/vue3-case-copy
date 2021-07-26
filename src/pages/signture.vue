@@ -276,6 +276,7 @@ export default defineComponent({
   }
   .content {
     padding: 0.2rem 0.15rem;
+    font-size: .16rem;
   }
   .content-list li {
     margin-top: 0.2rem;

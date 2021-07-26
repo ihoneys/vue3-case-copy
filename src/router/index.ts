@@ -1,7 +1,8 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory,createWebHistory } from 'vue-router'
 import { clearPending } from '../service/request'
 import routes from './path'
 const routerHash = createWebHashHistory()
+const routerHistory = createWebHistory()
 const router = createRouter({
     history: routerHash,
     routes,

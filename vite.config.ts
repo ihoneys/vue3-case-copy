@@ -63,8 +63,9 @@ export default defineConfig({
     cors: true, // 允许跨域
     proxy: {
       '/api': {
-        target: 'http://192.168.10.72:9001',
+        // target: 'http://192.168.10.72:9001',
         // target: 'http://10.1.95.65:9001',
+        target: 'https://wxisdev.91160.com/medical-record',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace('/api/', '/')

@@ -57,9 +57,11 @@ export default defineComponent({
     });
 
     const query = getUrlParams();
-
+    console.log(query, 'query');
+    
     if (!isObjEmpty(query)) {
-      let userInfo = aseDecrypt(query.userInfo);
+      const delePath = query.userInfo.replace('#/home','') 
+      let userInfo = aseDecrypt(delePath);     
       userInfo = JSON.parse(userInfo);
       let obj = {};
       for (const key in userInfo) {

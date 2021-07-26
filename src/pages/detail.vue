@@ -116,7 +116,7 @@ export default defineComponent({
       isPass: false,
       failReason: '审核失败',
       buttonContext,
-      time: 330000,
+      time: 0,
       showOverTime: false,
     });
 
@@ -147,10 +147,11 @@ export default defineComponent({
         changeIsSingleBtn(applyStatus);
         changIsPassAndFailReason(applyStatus, '审核失败');
         changeStepsCurrentIndex(applyStatus);
-        console.log(applyStatus);
+        console.log(data)
       }
     };
 
+    // 计算剩余支付时间
     const countTime = (submitTime) => {
       const TIME = 1 * 60 * 60 * 1000;
       const submitTimestamp = Date.parse(submitTime.replace(/-/g, '/'));
@@ -158,10 +159,11 @@ export default defineComponent({
       if (curTime <= TIME) {
         state.time = TIME - curTime;
       } else {
-        // state.time = 0;
+        state.time = 0;
       }
     };
 
+    // 当前的 步骤条 Index
     const changeStepsCurrentIndex = (status) => {
       const stepsIndex = {
         4: 1,
@@ -175,6 +177,7 @@ export default defineComponent({
       state.currentIndex = stepsIndex[status];
     };
 
+    // 审核失败显示
     const changIsPassAndFailReason = (status, failReason) => {
       const noPassStatus = [6, 7];
       state.isPass = !noPassStatus.includes(status);
@@ -183,6 +186,7 @@ export default defineComponent({
       }
     };
 
+    // 是否显示单个按钮
     const changeIsSingleBtn = (status) => {
       const statusArr = [2, 8];
       const statusBtnText = {
@@ -214,6 +218,7 @@ export default defineComponent({
     const computedBgc = computed(() => {
       return state.data.applyStatus !== 3;
     });
+
     const computedCountShow = computed(() => {
       return state.data.applyStatus === 2 && state.data.applyStatus !== 3;
     });
@@ -265,6 +270,7 @@ export default defineComponent({
       });
     };
 
+
     const strategyBtnLeft = {
       2: () =>
         cancelApplyMethod(state.data.id, () => {
@@ -291,6 +297,7 @@ export default defineComponent({
       8: confirmReceipt,
     };
 
+    // 按钮执行对应方法
     const executeFunc = (executeObj = 'right') => {
       const {
         data: { applyStatus },
@@ -372,7 +379,7 @@ export default defineComponent({
   .address-icon {
     width: 0.16rem;
     height: 0.19rem;
-    margin-right: .1rem;
+    margin-right: 0.1rem;
   }
   .flex-column {
     display: flex;
@@ -386,15 +393,15 @@ export default defineComponent({
   bottom: 0;
   right: 0;
   width: 100%;
-  height: .74rem;
+  height: 0.74rem;
   background: linear-gradient(180deg, #00c6b8 0%, #f5f5f5 100%);
   z-index: 1;
 }
 .count-wrapper {
   position: relative;
-  height: .64rem;
-  line-height: .64rem;
-  border-radius: .06rem;
+  height: 0.64rem;
+  line-height: 0.64rem;
+  border-radius: 0.06rem;
   z-index: 999;
   box-sizing: border-box;
   background-color: #ffffff;
@@ -402,17 +409,17 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   .count-icon {
-    width: .24rem;
-    height: .24rem;
+    width: 0.24rem;
+    height: 0.24rem;
     z-index: 999;
-    margin-right: .08rem;
+    margin-right: 0.08rem;
   }
   .count-time {
     display: flex;
     align-items: center;
     .count-time-style {
       color: #ffae17;
-      font-size: .16rem;
+      font-size: 0.16rem;
       font-weight: bold;
       letter-spacing: -0.01rem;
     }
