@@ -58,14 +58,15 @@ export default defineConfig({
   },
   base: './',
   server: {
-    port: 3000, // 设置端口
+    port: 3006, // 设置端口
     open: true, // 设置启动时，自动打开浏览器
     cors: true, // 允许跨域
     proxy: {
       '/api': {
         // target: 'http://192.168.10.72:9001',
         // target: 'http://10.1.95.65:9001',
-        target: 'https://wxisdev.91160.com/medical-record',
+        // target: 'https://wxisdev.91160.com/medical-record',
+        target: 'https://wxistest2.91160.com/medical-record',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace('/api/', '/')
