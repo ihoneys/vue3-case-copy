@@ -61,6 +61,7 @@ export default defineConfig({
     port: 3006, // 设置端口
     open: true, // 设置启动时，自动打开浏览器
     cors: true, // 允许跨域
+    host:'10.1.94.90',
     proxy: {
       '/api': {
         // target: 'http://192.168.10.72:9001',

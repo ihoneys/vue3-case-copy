@@ -29,49 +29,52 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
+import { defineComponent, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 
-import { entranceData } from '@/common/local-data';
-import { getHomeUnitConfig } from '@/service/api';
+import { entranceData } from "@/common/local-data";
+import { getHomeUnitConfig } from "@/service/api";
 
-import { isObjEmpty } from '@/utils/utils';
-import { getUrlParams, aseDecrypt } from '../utils/utils';
+import { isObjEmpty } from "@/utils/utils";
+import { getUrlParams, aseDecrypt } from "../utils/utils";
 
 export default defineComponent({
-  name: 'Home',
+  name: "Home",
   setup() {
     const { commit, getters } = useStore();
     const { getRequestParams: requestParams } = getters;
     const { unitId } = requestParams;
     const router = useRouter();
+
+    const query = getUrlParams();
+
     const listData = ref(entranceData);
+
     onMounted(async () => {
-      const { data } = await getHomeUnitConfig(unitId);
+      if (!isObjEmpty(query)) {
+        const delePath = query.userInfo.replace("#/home", "");
+        var userInfo = aseDecrypt(delePath);
+        userInfo = JSON.parse(userInfo);
+        let obj = {};
+        for (const key in userInfo) {
+          obj[key] = userInfo[key];
+        }
+        commit("changeRequestParams", obj);
+      }
+
+      const { data } = await getHomeUnitConfig(
+        unitId !== 0 ? unitId : userInfo.unitId
+      );
       if (!isObjEmpty(data)) {
-        listData.value[0].content = data['suitablePeople'];
-        listData.value[1].content = data['obtainMode'];
-        listData.value[2].content = data['contactMode'];
+        listData.value[0].content = data["suitablePeople"];
+        listData.value[1].content = data["obtainMode"];
+        listData.value[2].content = data["contactMode"];
       }
     });
 
-    const query = getUrlParams();
-    console.log(query, 'query');
-    
-    if (!isObjEmpty(query)) {
-      const delePath = query.userInfo.replace('#/home','') 
-      let userInfo = aseDecrypt(delePath);     
-      userInfo = JSON.parse(userInfo);
-      let obj = {};
-      for (const key in userInfo) {
-        obj[key] = userInfo[key];
-      }
-      commit('changeRequestParams', obj);
-    }
-
     const handleDefault = () => {
-      router.push('/notice');
+      router.push("/notice");
     };
 
     return {
@@ -85,7 +88,7 @@ export default defineComponent({
 .header-wrapper {
   height: 1.69rem;
   width: 3.75rem;
-  background-image: url('../assets/img/enter-header.png');
+  background-image: url("../assets/img/enter-header.png");
   background-size: 100% 100%;
 }
 .content-wrapper {
@@ -135,6 +138,7 @@ export default defineComponent({
         margin-left: 0.1rem;
       }
       .item-content {
+        flex: 1;
         margin-top: 0.09rem;
         margin-left: 0.1rem;
         font-size: 0.14rem;

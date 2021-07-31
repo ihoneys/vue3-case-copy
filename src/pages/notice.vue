@@ -19,7 +19,6 @@ import { getHospitalConfigNotice } from '@/service/api';
 
 import BottomButton from '@/components/bottom-button/Index.vue';
 import { useStore } from 'vuex';
-import { getRequestParams } from '../store/getters';
 
 const buttonContext = [
   {

@@ -3,15 +3,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, nextTick, onMounted, provide, ref } from 'vue';
-import { Dialog, Toast } from 'vant';
-
-import { getUrlParams, createDialog } from '@/utils/utils';
-import { checkPayOrder } from '@/service/api';
-import { useRouter } from 'vue-router';
+import { defineComponent, onMounted } from "vue";
+import { getUrlParams, createDialog } from "@/utils/utils";
+import { checkPayOrder } from "@/service/api";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
-  name: 'App',
+  name: "App",
   setup() {
     const router = useRouter();
     const { applyId } = getUrlParams();
@@ -23,13 +21,13 @@ export default defineComponent({
     const checkPayMethod = async () => {
       try {
         const { returnCode } = await checkPayOrder(applyId);
-        const isSuccessText = returnCode === 0 ? '支付成功！' : '支付失败！';
+        const isSuccessText = returnCode === 0 ? "支付成功！" : "支付失败！";
         createDialog(isSuccessText, () => {
-          router.push('/record');
+          router.push("/record");
         });
       } catch (error) {
-        createDialog('支付查询确认失败！', () => {
-          router.push('/record');
+        createDialog("支付查询确认失败！", () => {
+          router.push("/record");
         });
       }
     };

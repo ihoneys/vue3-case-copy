@@ -23,7 +23,7 @@
         </div>
         <!-- <div class="pd-r-15">{{ expressCompany }}</div> -->
         <div class="selected" style="padding-right: 0.08rem">
-          <span>{{ expressCompany ? expressCompany : '请选择快递公司' }}</span>
+          <span>{{ expressCompany ? expressCompany : "请选择快递公司" }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </li>
@@ -33,7 +33,7 @@
           <span>邮寄地址</span>
         </div>
         <div class="selected" style="padding-right: 0.08rem">
-          <span>{{ currentAddress ? currentAddress : '请选择地址' }}</span>
+          <span>{{ currentAddress ? currentAddress : "请选择地址" }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </li>
@@ -44,12 +44,16 @@
             <span>院内领取地址</span>
           </div>
         </div>
-        <div class="take-address">
-          {{ takeAddress.pickUpAddress }} 备注：<br />
-          电话：{{ takeAddress.contactPhone }} 取件时间：工作日：{{
-            takeAddress.pickUpTime
+        <div
+          class="take-address"
+          v-if="takeAddress && takeAddress.pickUpAddress"
+        >
+          {{ takeAddress.pickUpAddress }} <br />备注： 电话：{{
+            takeAddress.contactPhone
           }}
+          取件时间：工作日：{{ takeAddress.pickUpTime }}
         </div>
+        <div v-else class="take-address">地址获取失败</div>
       </template>
       <div class="user-tips">
         <div>温馨提醒</div>
@@ -58,7 +62,7 @@
         </p>
       </div>
     </ul>
-    <van-popup v-model:show="show" position="bottom" :style="{ height: '30%' }">
+    <van-popup v-model:show="show" position="bottom">
       <van-picker
         title="选择快递公司"
         :columns="columns"
@@ -76,35 +80,35 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
-import { useStore } from 'vuex';
-import { useRouter } from 'vue-router';
+import { defineComponent, onMounted, ref } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
 
-import HeaderSteps from '@/components/steps/Index.vue';
-import BottomButton from '@/components/bottom-button/Index.vue';
+import HeaderSteps from "@/components/steps/Index.vue";
+import BottomButton from "@/components/bottom-button/Index.vue";
 
-import { defineSteps, isObjEmpty } from '../utils/utils';
+import { createToast, defineSteps, isObjEmpty } from "../utils/utils";
 import {
   getExpressCompany,
   saveMailingData,
   getTakeAddress,
   getCollectionMethod,
-} from '@/service/api';
+} from "@/service/api";
 
 const buttonContext = [
   {
-    text: '下一步',
+    text: "下一步",
     styleBtn: {
-      background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-      boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
-      color: '#fff',
+      background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
+      boxShadow: "0rem .04rem .06rem 0rem rgba(0,155,143,0.17)",
+      color: "#fff",
     },
   },
-  { text: '上一步', styleWidth: {} },
+  { text: "上一步", styleWidth: {} },
 ];
 
 export default defineComponent({
-  name: 'App',
+  name: "App",
   components: {
     HeaderSteps,
     BottomButton,
@@ -117,7 +121,6 @@ export default defineComponent({
       getIsMyself,
       getRequestParams: requestParams,
       getMailingAddress: mailingObject,
-      getUpdateAddress: addressInfo,
       getApplyRecordId: recordId,
       getIsResetWrite: isResetWrite,
     } = getters;
@@ -131,16 +134,17 @@ export default defineComponent({
     } = mailingObject;
 
     const checked = ref(way);
+    console.log(way)
     const expressCompany = ref(expCompany);
-    const columns = ref([]);
+    const columns = ref<any>([]);
     const show = ref(false);
-    const takeAddress = ref('');
+    const takeAddress = ref<any>(null);
 
     let requestNums = 0;
     const watchChange = (val) => {
       checked.value = val;
-      dispatch('changeIsTakeAction', val);
-      if (val === '2' && requestNums === 0) {
+      dispatch("changeIsTakeAction", val);
+      if (val === "2" && requestNums === 0) {
         getTakeAddressContent();
       }
     };
@@ -163,50 +167,62 @@ export default defineComponent({
       }
 
       if (isResetWrite) {
-        const { data } = await getCollectionMethod(1078);
+        const { data } = await getCollectionMethod(recordId);
         if (!isObjEmpty(data)) {
-          checked.value = data.collectionMethod ? '1' : '2';
-          expressCompany.value = data.expressCompany
-          takeAddress.value = data.expressAddress
+          checked.value = data.collectionMethod ? "1" : "2";
+          expressCompany.value = data.expressCompany;
+          takeAddress.value = data.expressAddress;
         }
       }
     });
 
     const handleAddress = () => {
-      router.push('/address');
+      router.push("/address");
     };
 
     const handleNext = () => {
+      if (checked.value === "1") {
+        if (!expressCompany.value) {
+          createToast("请选择快递公司！", "fail");
+          return false;
+        }
+
+        if (!mailingAddress) {
+          createToast("请填写邮寄地址！", "fail");
+          return false;
+        }
+      }
       nextSaveData();
       commitChangeMailingAddress();
     };
 
     const nextSaveData = async () => {
-      const postData = {
+      const postData: any = {
         addressId,
         applyId: recordId,
-        collectionMethod: checked.value === '1' ? 1 : 0,
+        collectionMethod: checked.value === "1" ? 1 : 0,
         expressAddress: mailingAddress,
         expressCompany: expressCompany.value,
       };
-      if (checked.value === '2') {
+      if (checked.value === "2" && !isObjEmpty(takeAddress.value)) {
         postData.pickUpAddress = `${takeAddress.value.pickUpAddress}备注：电话：${takeAddress.value.contactPhone} 取件时间：工作日：${takeAddress.value.pickUpTime}`;
+      } else {
+        postData.pickUpAddress = null;
       }
       const { returnCode } = await saveMailingData(postData);
 
       if (returnCode === 0) {
-        router.push('/payOrder');
+        router.push("/payOrder");
       }
     };
 
     const handlePrev = () => {
       commitChangeMailingAddress();
-      router.push('/copy');
+      router.push("/copy");
     };
 
     const commitChangeMailingAddress = () => {
-      console.log(expressCompany.value);
-      commit('changeMailingAddress', {
+      commit("changeMailingAddress", {
         addressId,
         way: checked.value,
         expressCompany: expressCompany.value,
@@ -216,7 +232,7 @@ export default defineComponent({
 
     const confirm = (val) => {
       expressCompany.value = val;
-      commit('changeExpressCompany', val);
+      commit("changeExpressCompany", val);
       show.value = false;
     };
     return {
@@ -243,7 +259,7 @@ export default defineComponent({
 .steps {
   background-color: #f5f5f5;
   min-height: 100vh;
-  font-size: .16rem;
+  font-size: 0.16rem;
 }
 .column-flex-left {
   width: 1.2rem;

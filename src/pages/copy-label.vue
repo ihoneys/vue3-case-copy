@@ -6,9 +6,9 @@
     </div>
     <LabelList :list="copyContent" />
     <div class="location-wrapper">
-      <div>保险所在地</div>
+      <div style="padding-right: 0.2rem">保险所在地</div>
       <div class="selected" @click="show = true">
-        <span>{{ insuranceLocation ? insuranceLocation : '请选择' }}</span>
+        <span>{{ insuranceLocation ? insuranceLocation : "请选择" }}</span>
         <img class="next-icon" src="@/assets/img/next.png" alt="" />
       </div>
     </div>
@@ -22,7 +22,7 @@
       <div class="count-wrapper">
         <div
           class="count"
-          :class="[count === 0 ? 'over-reduce' : '']"
+          :class="[count === 1 ? 'over-reduce' : '']"
           @click="reduce"
         >
           -
@@ -31,10 +31,11 @@
         <div class="count" @click="increase">+</div>
       </div>
     </div>
-    <van-popup v-model:show="show" position="bottom" :style="{ height: '30%' }">
+    <van-popup v-model:show="show" position="bottom">
       <van-area
         title="选择省市"
-        :columns-num="2"
+        :columns-num="3"
+        :columns-placeholder="['请选择', '请选择', '请选择']"
         :area-list="areaList"
         @confirm="confirm"
         @cancel="show = !show"
@@ -100,7 +101,6 @@ export default defineComponent({
 
 
     const initLabelData = async () => {
-      console.log(21321)
       const { data } = await getCopyLabelData(unitId)
       if (!isObjEmpty(data)) {
         for (const key in data) {
@@ -112,7 +112,6 @@ export default defineComponent({
             })
           }
         }
-        console.log("+++6666")
       }
 
 
@@ -127,9 +126,9 @@ export default defineComponent({
         })
         return indexArr
       }
+
       if (isResetWrite) {
         const { data } = await getCopyPurposeContent(applyId)
-        console.log(data)
         state.insuranceLocation = data.reimbursementAddress
         state.printNums = data.printingSheetsNumber
         const copyContentSelected = findIncludes(state.copyContent, data.copyContent)
@@ -142,11 +141,6 @@ export default defineComponent({
           state.copyPurpose[index].checked = true
         })
       }
-    }
-
-    const getCopyCotent = async () => {
-      const res = await getCopyPurposeContent(applyId)
-      console.log(res)
     }
 
     if (copyDialog) {
@@ -164,20 +158,30 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      console.log(87979)
       initLabelData()
-      console.log(21321)
-      getCopyCotent()
     })
 
     const confirm = (location) => {
+
+      state.show = false
+      for (const val of location) {
+        if (!val) {
+          return false
+        }
+      }
       let codeStr = ""
       location.forEach(item => {
         codeStr += item.code + ","
       })
       state.areaCode = codeStr.substr(0, codeStr.length - 1)
-      state.insuranceLocation = location[0].name + location[1].name
-      state.show = false
+      const crownList = ['北京市', '天津市', '上海市', '重庆市']
+
+      if (crownList.includes(location[0].name)) {
+        state.insuranceLocation = location[0].name + location[2].name
+      } else {
+        state.insuranceLocation = location[0].name + location[1].name + location[2].name
+      }
+
     }
 
     const handleNext = () => {
@@ -247,7 +251,7 @@ export default defineComponent({
     }
 
     const reduce = () => {
-      if (state.count > 0) {
+      if (state.count > 1) {
         state.count--
       }
     }
@@ -282,31 +286,31 @@ export default defineComponent({
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: .01rem solid #f5f5f5;
-    height: .44rem;
-    margin-top: .3rem;
+    border-bottom: 0.01rem solid #f5f5f5;
+    height: 0.44rem;
+    margin-top: 0.3rem;
     .count-wrapper {
       display: flex;
       align-items: center;
     }
     .count {
-      width: .2rem;
-      height: .2rem;
+      width: 0.2rem;
+      height: 0.2rem;
       border-radius: 50%;
       text-align: center;
-      line-height: .2rem;
-      border: .015rem solid #666;
+      line-height: 0.2rem;
+      border: 0.015rem solid #666;
       color: #666;
       font-weight: bold;
     }
     .numbers {
-      width: .4rem;
+      width: 0.4rem;
       text-align: center;
     }
   }
   .next-icon {
-    width: .24rem;
-    height: .24rem;
+    width: 0.24rem;
+    height: 0.24rem;
   }
   .selected {
     display: flex;
@@ -317,13 +321,13 @@ export default defineComponent({
   .location-wrapper {
     display: flex;
     align-items: center;
-    height: .44rem;
-    margin: .3rem 0;
-    border-bottom: .01rem solid #f5f5f5;
+    height: 0.44rem;
+    margin: 0.3rem 0;
+    border-bottom: 0.01rem solid #f5f5f5;
   }
 }
 .over-reduce {
   color: #cccccc !important;
-  border: .015rem solid #cccccc !important;
+  border: 0.015rem solid #cccccc !important;
 }
 </style>

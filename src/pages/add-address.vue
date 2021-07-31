@@ -11,7 +11,7 @@
       </li>
       <li class="column-item" @click="show = true">
         <div class="column-label">所在地区</div>
-        <div class="selected" style="padding-right: .08rem">
+        <div class="selected" style="padding-right: 0.08rem">
           <span>{{ area ? area : " 请选择省市区县、乡镇等" }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
@@ -32,7 +32,7 @@
         inactive-color="#f5f5f5"
       />
     </div>
-    <van-popup v-model:show="show" position="bottom" :style="{ height: '30%' }">
+    <van-popup v-model:show="show" position="bottom">
       <van-area
         title="选择省市"
         :columns-num="3"
@@ -58,9 +58,6 @@ import BottomButton from "@/components/bottom-button/Index.vue"
 import { Toast } from 'vant';
 import { checkPhone, createDialog } from '../utils/utils';
 
-
-
-const columns = ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华'];
 const buttonContext = [{
   text: "新增地址", styleBtn: {
     background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
@@ -82,12 +79,6 @@ export default defineComponent({
     const router = useRouter()
     const { type } = route.query
 
-    if (type === 'edit') {
-      buttonContext[0].text = '保存'
-    }
-
-    console.log(defaultChecked)
-
     const state = reactive({
       user,
       phone,
@@ -96,6 +87,16 @@ export default defineComponent({
       checked: defaultChecked,
       show: false,
     })
+
+    if (type === 'edit') {
+      buttonContext[0].text = '保存'
+    } else {
+      state.user = ""
+      state.phone = "" 
+      state.area = ""
+      state.address = ""
+      state.checked = false
+    }
 
     let areaCode = ""
     const confirm = (address) => {
@@ -111,7 +112,7 @@ export default defineComponent({
 
 
     const handleBtn = async () => {
-      if(!validateFrom()) return
+      if (!validateFrom()) return
       const postData = {
         address: state.area,
         addressCode: areaCode,
@@ -148,7 +149,7 @@ export default defineComponent({
         value: state.address,
       }]
       const action = rules.filter(item => !item.value)
-      if (action.length) {        
+      if (action.length) {
         createDialog(action[0].text)
         return false
       } else {
@@ -177,21 +178,21 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: .45rem;
+  height: 0.45rem;
   background-color: #fff;
-  padding-left: .15rem;
+  padding-left: 0.15rem;
   box-sizing: border-box;
-  border-bottom: .01rem solid #f5f5f5;
+  border-bottom: 0.01rem solid #f5f5f5;
   & :deep() .van-field__control {
     text-align: right !important;
   }
   & :deep() input::-webkit-input-placeholder {
-    font-size: .15rem;
+    font-size: 0.15rem;
     color: #999999;
   }
   .next-icon {
-    width: .24rem;
-    height: .24rem;
+    width: 0.24rem;
+    height: 0.24rem;
   }
   .selected {
     display: flex;
@@ -202,9 +203,9 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: .15rem;
+  padding: 0.15rem;
   background-color: #fff;
-  margin-top: .1rem;
+  margin-top: 0.1rem;
 }
 .set-default-left {
   display: flex;
@@ -213,7 +214,7 @@ export default defineComponent({
 
 .tips-content {
   color: #999999;
-  font-size: .12rem;
+  font-size: 0.12rem;
 }
 .column-label {
   width: 1rem;

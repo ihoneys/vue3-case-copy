@@ -20,7 +20,7 @@
           <span class="column-name">被委托人身份证：</span>
           <span>{{ othersCardId }}</span>
         </li>
-        <li>
+        <li v-if="matter">
           <span class="column-name">委托事项：</span>
           <span class="matter">{{ matter }}</span>
         </li>
@@ -39,24 +39,22 @@
         <span class="column-width">时间：</span>
         <span>{{ currentDate }}</span>
       </div>
-      <button class="entrusted" @click="signShow = true">被委托人签名</button>
+      <button class="entrusted" @click="openSign">被委托人签名</button>
     </div>
-    <div v-show="signShow" class="mask-wrapper">
+    <van-overlay v-model:show="signShow" z-index="99">
       <div class="content-wrapper">
         <div class="close-sign" @click="signShow = false">
           <van-icon color="#ffffff" size=".24rem" name="cross" />
         </div>
         <div class="title">被委托人签名</div>
-        <div class="sign-area">
-          <canvas class="sign-canvas" id="signCanvas" />
-          <!-- 签名区域 -->
-        </div>
+        <canvas class="sign-canvas" id="signCanvas" />
         <div class="confirm-btn">
           <button class="confirm reset" @click="handleReset">重置</button>
           <button class="confirm" @click="confirmSign">确认</button>
         </div>
       </div>
-    </div>
+    </van-overlay>
+
     <BottomButton
       :isSingle="false"
       :buttonContext="buttonContext"
@@ -67,39 +65,39 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, reactive, ref, toRefs } from 'vue';
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
+import { defineComponent, onMounted, reactive, ref, toRefs } from "vue";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 
-import { Toast } from 'vant';
+import { Toast } from "vant";
 
-import BottomButton from '@/components/bottom-button/Index.vue';
-import HeaderSteps from '@/components/steps/Index.vue';
+import BottomButton from "@/components/bottom-button/Index.vue";
+import HeaderSteps from "@/components/steps/Index.vue";
 
-import { defineSteps, isObjEmpty, getYearsMonthDay } from '../utils/utils';
+import { defineSteps, isObjEmpty, getYearsMonthDay } from "../utils/utils";
 import {
   getEntrustedMattersByParams,
   uploadImageBas64,
   saveMatterContent,
   getPowerAttorney,
-} from '@/service/api';
+} from "@/service/api";
 
-import SignturePad from 'signature_pad';
-import html2canvas from 'html2canvas';
+import SignturePad from "signature_pad";
+import html2canvas from "html2canvas";
 
 const buttonContext = [
   {
-    text: '下一步',
+    text: "下一步",
     styleBtn: {
-      background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-      boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
-      color: '#fff',
+      background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
+      boxShadow: "0rem .04rem .06rem 0rem rgba(0,155,143,0.17)",
+      color: "#fff",
     },
   },
-  { text: '上一步', styleWidth: {} },
+  { text: "上一步", styleWidth: {} },
 ];
 export default defineComponent({
-  name: 'signture',
+  name: "signture",
   components: {
     HeaderSteps,
     BottomButton,
@@ -118,95 +116,98 @@ export default defineComponent({
     const signShow = ref(false);
     const signImage = ref(getSignImage);
 
-    const currentDate = getYearsMonthDay();
-    let powerAttorneyPic = '';
+    const canvasStyle = ref({
+      width: 375 + "px",
+    });
 
-    const { patientName, patientCardId, othersName, othersCardId } = writeInfo;
+    const currentDate = getYearsMonthDay();
+    let powerAttorneyPic = "";
+
+    const newWriteInfo = Object.assign({}, writeInfo);
+    const { patientName, patientCardId, othersName, othersCardId } =
+      newWriteInfo;
 
     const state = reactive({
       patientName,
       patientCardId,
       othersName,
       othersCardId,
-      matter:
-        '因复印需要，委托我的xx关系xx姓名为我的代理人，前往xxx医院复印我在xx科室住院治疗的病例资料，委托人签署该授权委托书真实有效，如有不实，本人承担全部法律责任。',
+      matter: "",
       id: null,
     });
 
-    onMounted(async () => {
+    onMounted(() => {
       const data = {
         unitId: requestParams.unitId,
         clientNameRelation: writeInfo.othersRelation,
         patientName,
         inHosArea: writeInfo.hospitalName,
       };
-      const { data: matter } = await getEntrustedMattersByParams(data);
-      if (matter) {
-        state.matter = matter;
-      }
-      
-      if(isResetWrite) {
+      getEntrustedMattersByParams(data).then((res) => {
+        const { data: matter } = res;
+        if (matter) {
+          state.matter = matter;
+        }
+      });
+
+      if (isResetWrite) {
         getPowerAttorneyRequest();
       }
     });
 
     const getPowerAttorneyRequest = async () => {
       const { data } = await getPowerAttorney(applyRecordId);
-      console.log(data)
       if (!isObjEmpty(data)) {
         state.patientName = data.patientName;
         state.patientCardId = data.patientIdCardNo;
         state.othersName = data.clientName;
         state.othersCardId = data.clientIdCardNo;
-        state.id = data.id
-        signImage.value = data.clientSignature
+        state.id = data.id;
+        signImage.value = data.clientSignature;
       }
     };
 
     let signaturePad;
-
     const initSign = () => {
-      let canvas = document.getElementById('signCanvas');
+      const canvas = document.getElementById("signCanvas") as HTMLCanvasElement;
+      
+      canvas.width = document.documentElement.clientWidth - 5;
+
       signaturePad = new SignturePad(canvas, {
-        penColor: '#333',
-        backgroundColor: '#f5f5f5',
+        penColor: "#333",
+        backgroundColor: "#f5f5f5",
       });
     };
 
     const _uploadImageFunc = async (imageBse64, isSign = true) => {
       const fd = new FormData();
-      fd.append('base64Data', imageBse64);
+      fd.append("base64Data", imageBse64);
       const res = await uploadImageBas64(fd);
       const { data } = res;
       if (isObjEmpty(data)) {
-        createMessage('上传失败！');
+        createMessage("上传失败！");
       } else {
         if (isSign) {
           signImage.value = data.url;
-          commit('changeSignImage', data.url);
+          commit("changeSignImage", data.url);
         } else {
           powerAttorneyPic = data.url;
         }
       }
     };
 
-    const confirmSign = () => {
-      if (signaturePad.isEmpty()) {
-        return Toast('请签名');
-      }
-      const imageBse64 = signaturePad.toDataURL('image/jpeg');
-      signShow.value = false;
-      _uploadImageFunc(imageBse64);
-    };
-
     const getImageAndNext = async () => {
-      const contentCavans = document.getElementById('content');
+      if (!signImage.value) {
+        createMessage("被委托人未签名！");
+        return;
+      }
+      const contentCavans = document.getElementById("content") as HTMLElement;
       const canvas = await html2canvas(contentCavans, {
         backgroundColor: null, //画出来的图片有白色的边框,不要可设置背景为透明色（null）
         useCORS: true, //支持图片跨域
         scale: 1, //设置放大的倍数
       });
-      const imageBas64 = canvas.toDataURL('image/jpeg');
+      const imageBas64 = canvas.toDataURL("image/jpeg");
       _uploadImageFunc(imageBas64, false);
 
       const data = {
@@ -216,9 +217,9 @@ export default defineComponent({
         clientSignature: signImage.value,
         powerAttorneyPic,
       };
-      const { returnCode } = await saveMatterContent(data);
+      const { returnCode, returnMsg } = await saveMatterContent(data);
       if (returnCode === 0) {
-        router.push('/copy');
+        router.push("/copy");
       } else {
         createMessage(returnMsg);
       }
@@ -227,16 +228,21 @@ export default defineComponent({
       // document.querySelector('.signture-wrapper').appendChild(img);
     };
 
-    onMounted(() => {
-      initSign();
-    });
+    const confirmSign = () => {
+      if (signaturePad.isEmpty()) {
+        return Toast("请签名");
+      }
+      const imageBse64 = signaturePad.toDataURL("image/jpeg");
+      signShow.value = false;
+      _uploadImageFunc(imageBse64);
+    };
 
     const handleNext = () => {
       getImageAndNext();
     };
 
     const handlePrev = () => {
-      router.push('/write');
+      router.push("/write");
     };
 
     const handleReset = () => {
@@ -245,6 +251,13 @@ export default defineComponent({
 
     const createMessage = (message) => {
       Toast.fail(message);
+    };
+
+    const openSign = () => {
+      signShow.value = true;
+      setTimeout(() => {
+        initSign();
+      });
     };
 
     return {
@@ -259,15 +272,30 @@ export default defineComponent({
       confirmSign,
       signImage,
       currentDate,
+      canvasStyle,
+      openSign,
     };
   },
 });
 </script>
 
 <style lang="scss" scoped>
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.block {
+  width: 120px;
+  height: 120px;
+  background-color: #fff;
+}
 .sign-canvas {
-  width: 100%;
-  height: 1.42rem;
+  background-color: #f5f5f5;
+  border: 0.02rem dashed #00c6b8;
+  box-sizing: border-box;
 }
 .signture-wrapper {
   background-color: #ffffff;
@@ -275,8 +303,11 @@ export default defineComponent({
     text-align: center;
   }
   .content {
-    padding: 0.2rem 0.15rem;
-    font-size: .16rem;
+    padding: 0.2rem 0.15rem 0 0.2rem;
+    padding-bottom: 0.88rem;
+    height: 100%;
+    font-size: 0.16rem;
+    box-sizing: border-box;
   }
   .content-list li {
     margin-top: 0.2rem;
@@ -337,19 +368,6 @@ export default defineComponent({
     color: #ffffff;
     font-weight: bold;
     margin-bottom: 0.2rem;
-  }
-  .sign-area {
-    box-sizing: border-box;
-    width: 100%;
-    height: 1.42rem;
-    border: 0.02rem dashed #00c6b8;
-    background-color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.18rem;
-    color: #999;
-    padding: 0.8rem 0.1rem;
   }
   .confirm {
     width: 1.67rem;

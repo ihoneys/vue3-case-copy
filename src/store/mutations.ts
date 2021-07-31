@@ -5,7 +5,7 @@ const mutations = {
         state.writeInfo.isMyself = status
     },
     changeIsTake(state, way) {
-        state.isTake = way
+        state.mailing.way = way
     },
     // 下一步保存
     changeWriteInfo(state, writeInfo) {

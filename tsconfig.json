@@ -12,7 +12,11 @@
     "typeRoots": ["../node_modules/@types"],
     "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "baseUrl": ".",
+    "paths": {
+        "@/*": ["src/*"]
+    }
   },
   "include": [
     "types",

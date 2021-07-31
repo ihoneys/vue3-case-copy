@@ -9,10 +9,9 @@
 </template>
 
 <script lang="ts">
-import { config } from 'process';
-import { defineComponent, nextTick, provide, ref } from 'vue';
+import { defineComponent, nextTick, provide, ref } from "vue";
 export default defineComponent({
-  name: 'App',
+  name: "App",
   setup() {
     const isRouterAlive = ref(true);
     const reload = () => {
@@ -21,8 +20,8 @@ export default defineComponent({
         isRouterAlive.value = true;
       });
     };
-    provide('reload', reload);
-    const includeList = ref(['record']);
+    provide("reload", reload);
+    const includeList = ref(["record"]);
     return {
       isRouterAlive,
       includeList,

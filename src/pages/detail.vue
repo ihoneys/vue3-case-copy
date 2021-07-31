@@ -27,7 +27,7 @@
     </div>
     <div class="apply-info-box">
       <h3 class="headerline">
-        {{ data.collectionMethod ? '领取信息' : '自提地址' }}
+        {{ data.collectionMethod ? "领取信息" : "自提地址" }}
       </h3>
       <div class="address-info">
         <img
@@ -57,41 +57,41 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, reactive, toRefs } from 'vue';
-import { useStore } from 'vuex';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, defineComponent, onMounted, reactive, toRefs } from "vue";
+import { useStore } from "vuex";
+import { useRoute, useRouter } from "vue-router";
 
-import OrderSteps from '@/components/steps-order/Index.vue';
-import ApplyContent from '@/components/apply-info/Index.vue';
-import BottomButton from '@/components/bottom-button/Index.vue';
+import OrderSteps from "@/components/steps-order/Index.vue";
+import ApplyContent from "@/components/apply-info/Index.vue";
+import BottomButton from "@/components/bottom-button/Index.vue";
 
 import {
   getApplyRecordDetail,
   cancelApply,
   confirmReceipt as confirmReceiptRequest,
-} from '@/service/api';
-import { isObjEmpty } from '../utils/utils';
+} from "@/service/api";
+import { isObjEmpty } from "../utils/utils";
 import {
   toPay,
   cancelApplyMethod,
   resetWriteInfo,
   checkLogistics,
-} from '@/utils/commonOrder';
-import { Dialog, Toast } from 'vant';
+} from "@/utils/commonOrder";
+import { Dialog, Toast } from "vant";
 const buttonContext = [
   {
-    text: '去支付',
+    text: "去支付",
     styleBtn: {
-      background: '#FFAE17',
-      border: '.01rem solid #FFAE17',
-      color: '#fff',
+      background: "#FFAE17",
+      border: ".01rem solid #FFAE17",
+      color: "#fff",
     },
   },
-  { text: '取消申请', styleWidth: {} },
+  { text: "取消申请", styleWidth: {} },
 ];
 
 export default defineComponent({
-  name: 'detail',
+  name: "detail",
   components: {
     OrderSteps,
     ApplyContent,
@@ -101,11 +101,11 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const { getters, commit } = useStore();
-    const { getNewWriteInfo: writeInfo, getRequestParams: requestParams } =
-      getters;
+    const { getRequestParams: requestParams } = getters;
     const { unitId, openId, userId } = requestParams;
     const { id } = route.query;
-    const state = reactive({
+
+    const state: any = reactive({
       writeInfo: {},
       data: {
         applyStatus: 0,
@@ -114,7 +114,7 @@ export default defineComponent({
       isShowBtn: false,
       isSingle: false,
       isPass: false,
-      failReason: '审核失败',
+      failReason: "审核失败",
       buttonContext,
       time: 0,
       showOverTime: false,
@@ -123,38 +123,31 @@ export default defineComponent({
     const getDetails = async () => {
       const { data } = await getApplyRecordDetail(id);
       if (!isObjEmpty(data)) {
-        const {
-          applyType,
-          clientName,
-          clientIdCardNo,
-          inHosArea,
-          patientName,
-          patientIdCardNo,
-          patientHosCardNo,
-          submitTime,
-          applyStatus,
-        } = data;
-        state.writeInfo.isMyself = applyType;
-        state.writeInfo.othersName = clientName;
-        state.writeInfo.othersCardId = clientIdCardNo;
-        state.writeInfo.hospitalName = inHosArea;
-        state.writeInfo.patientName = patientName;
-        state.writeInfo.patientCardId = patientIdCardNo;
-        state.writeInfo.hosNo = patientHosCardNo;
-        state.writeInfo.submissionDate = submitTime;
+        const keyMap = {
+          isMyself: "applyType",
+          othersName: "clientName",
+          othersCardId: "clientIdCardNo",
+          hospitalName: "inHosArea",
+          patientName: "patientName",
+          patientCardId: "patientIdCardNo",
+          hosNo: "patientHosCardNo",
+          submissionDate: "submitTime",
+        };
+        for (const myKey in keyMap) {
+          state.writeInfo[myKey] = data[keyMap[myKey]];
+        }
         state.data = data;
-        countTime(submitTime);
-        changeIsSingleBtn(applyStatus);
-        changIsPassAndFailReason(applyStatus, '审核失败');
-        changeStepsCurrentIndex(applyStatus);
-        console.log(data)
+        countTime(data.submitTime);
+        changeIsSingleBtn(data.applyStatus);
+        changIsPassAndFailReason(data.applyStatus, "审核失败");
+        changeStepsCurrentIndex(data.applyStatus);
       }
     };
 
     // 计算剩余支付时间
     const countTime = (submitTime) => {
       const TIME = 1 * 60 * 60 * 1000;
-      const submitTimestamp = Date.parse(submitTime.replace(/-/g, '/'));
+      const submitTimestamp = Date.parse(submitTime.replace(/-/g, "/"));
       const curTime = new Date().getTime() - submitTimestamp;
       if (curTime <= TIME) {
         state.time = TIME - curTime;
@@ -190,25 +183,25 @@ export default defineComponent({
     const changeIsSingleBtn = (status) => {
       const statusArr = [2, 8];
       const statusBtnText = {
-        4: '取消申请',
-        6: '补充资料',
-        5: '等待自提/收货',
+        4: "取消申请",
+        6: "补充资料",
+        5: "等待自提/收货",
       };
       // 是否显示单个
       state.isSingle = !statusArr.includes(status);
-      console.log(state.isSingle, 'state.isSingle');
+      console.log(state.isSingle, "state.isSingle");
 
       // 如果显示单个改变按钮文字
       if (state.isSingle) {
         state.buttonContext[0].text = statusBtnText[status];
-        state.buttonContext[0].styleBtn.background = '#fff';
-        state.buttonContext[0].styleBtn.color = '#00C6B8';
-        state.buttonContext[0].styleBtn.border = '.01rem solid #00C6B8';
+        state.buttonContext[0].styleBtn.background = "#fff";
+        state.buttonContext[0].styleBtn.color = "#00C6B8";
+        state.buttonContext[0].styleBtn.border = ".01rem solid #00C6B8";
       } else {
         if (status === 8) {
-          state.buttonContext[0].text = '确认收件';
-          state.buttonContext[0].styleBtn.background = '#00C6B8';
-          state.buttonContext[0].styleBtn.border = '.01rem solid #00C6B8';
+          state.buttonContext[0].text = "确认收件";
+          state.buttonContext[0].styleBtn.background = "#00C6B8";
+          state.buttonContext[0].styleBtn.border = ".01rem solid #00C6B8";
         }
       }
     };
@@ -249,20 +242,20 @@ export default defineComponent({
           })
           .catch((err) => {});
       }
-      console.log('倒计时结束');
+      console.log("倒计时结束");
     };
 
     // 确认收件
     const confirmReceipt = () => {
       Dialog.confirm({
-        title: '提示',
-        message: '是否确认收件？',
-        confirmButtonColor: '#00C6B8',
+        title: "提示",
+        message: "是否确认收件？",
+        confirmButtonColor: "#00C6B8",
       }).then(async () => {
         const { returnCode } = await confirmReceiptRequest(state.data.id);
-        let receiptText = '确认收件失败!';
+        let receiptText = "确认收件失败!";
         if (returnCode === 0) {
-          receiptText = '收件成功！';
+          receiptText = "收件成功！";
           state.currentIndex = 4; // 头部进度条更新
           state.applyStatus = 10; // 已完成
         }
@@ -270,11 +263,10 @@ export default defineComponent({
       });
     };
 
-
     const strategyBtnLeft = {
       2: () =>
         cancelApplyMethod(state.data.id, () => {
-          router.push('/record');
+          router.push("/record");
         }),
       8: checkLogistics,
     };
@@ -286,29 +278,30 @@ export default defineComponent({
           openId,
           userId,
           payAmount: state.data.prepaidFees,
-          applyId: id,
+          applyId: id as string,
         }),
       4: () =>
         cancelApplyMethod(state.data.id, () => {
-          router.push('/record');
+          router.push("/record");
         }),
-      6: () => resetWriteInfo(commit, router, id),
-      5: () => console.log('等待自提/收货'),
+      6: () =>
+        resetWriteInfo(router, commit, id as string, state.data.applyStatus),
+      5: () => console.log("等待自提/收货"),
       8: confirmReceipt,
     };
 
     // 按钮执行对应方法
-    const executeFunc = (executeObj = 'right') => {
+    const executeFunc = (executeObj = "right") => {
       const {
         data: { applyStatus },
       } = state;
-      console.log(applyStatus, '788');
-      if (executeObj === 'right') {
+      console.log(applyStatus, "788");
+      if (executeObj === "right") {
         if (!strategyBtnRight[applyStatus])
-          return console.log('状态出错！right');
+          return console.log("状态出错！right");
         strategyBtnRight[applyStatus]();
       } else {
-        if (!strategyBtnLeft[applyStatus]) return console.log('状态出错！left');
+        if (!strategyBtnLeft[applyStatus]) return console.log("状态出错！left");
         strategyBtnLeft[applyStatus]();
       }
     };
@@ -319,7 +312,7 @@ export default defineComponent({
     };
 
     const handleLeftBtn = () => {
-      executeFunc('left');
+      executeFunc("left");
     };
 
     return {
@@ -341,6 +334,7 @@ export default defineComponent({
 .detail-wrapper {
   min-height: 100vh;
   padding: 0.1rem 0.12rem;
+  padding-bottom: .8rem;
   background-color: #f5f5f5;
   box-sizing: border-box;
   .apply-info-box {

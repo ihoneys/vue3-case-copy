@@ -3,7 +3,7 @@
     <li>
       <span className="headerline">申请信息</span>
     </li>
-    <template v-if="applyInfo.isMyself">
+    <template v-if="!applyInfo.isMyself || applyInfo.isMyself === 1">
       <li v-if="applyInfo.othersName">
         <span className="content-name">申请人：</span>
         <span className="content-text">{{applyInfo.othersName}}</span>
@@ -57,7 +57,9 @@ export default defineComponent({
       default: () => 0,
     },
   },
-  setup(props) {},
+  setup(props) {
+    console.log(props.applyInfo)
+  },
 });
 </script>
 

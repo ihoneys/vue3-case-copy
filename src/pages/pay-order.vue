@@ -23,9 +23,8 @@ import ApplyInfo from "@/components/apply-info/Index.vue";
 import BottomButton from "@/components/bottom-button/Index.vue"
 
 import { defineSteps } from "@/utils/utils"
-import { cancelApply, getPrepaidFee, payOrder } from "@/service/api"
-import { Toast } from 'vant';
-import { toPay } from "@/utils/commonOrder";
+import { getPrepaidFee } from "@/service/api"
+import { toPay, cancelApplyMethod } from "@/utils/commonOrder";
 import { createToast } from '../utils/utils';
 
 const buttonContext = [{
@@ -46,6 +45,7 @@ export default defineComponent({
     const router = useRouter()
     const { state, getters } = useStore()
     const { getApplyRecordId: recordId, getNewWriteInfo: writeInfo, getRequestParams: requestParams, getIsResetWrite: isResetWrite } = getters
+    console.log(writeInfo, 'writeInfo')
 
     let steps = ref(defineSteps(!state.writeInfo.isMyself))
 
@@ -106,6 +106,6 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 .apply-info-content {
-  padding: .15rem;
+  padding: 0.15rem;
 }
 </style>

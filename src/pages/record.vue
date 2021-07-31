@@ -78,73 +78,66 @@
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  defineComponent,
-  inject,
-  onMounted,
-  reactive,
-  toRefs,
-} from 'vue';
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
+import { computed, defineComponent, reactive, toRefs } from "vue";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 
 import {
   toPay,
   cancelApplyMethod,
   resetWriteInfo,
   checkLogistics,
-} from '@/utils/commonOrder';
+} from "@/utils/commonOrder";
 
-import { getRecordList } from '@/service/api';
-import { isObjEmpty } from '../utils/utils';
+import { getRecordList } from "@/service/api";
+import { isObjEmpty } from "../utils/utils";
 
-import WithoutData from '@/components/without-data/Index.vue';
+import WithoutData from "@/components/without-data/Index.vue";
 
 const statusObj = {
   1: {
-    color: '#FF9F4F',
-    name: '暂存',
+    color: "#FF9F4F",
+    name: "暂存",
   },
   2: {
-    color: '#FF9F4F',
-    name: '待支付',
+    color: "#FF9F4F",
+    name: "待支付",
   },
   3: {
-    color: '#FF9F4F',
-    name: '已取消',
+    color: "#FF9F4F",
+    name: "已取消",
   },
   4: {
-    color: '#FF9F4F',
-    name: '待审核',
+    color: "#FF9F4F",
+    name: "待审核",
   },
   5: {
-    color: '#5ACF83',
-    name: '审核通过',
+    color: "#5ACF83",
+    name: "审核通过",
   },
   6: {
-    color: '#FA5151',
-    name: '审核失败',
+    color: "#FA5151",
+    name: "审核失败",
   },
   7: {
-    color: '#FA5151',
-    name: '审核失败',
+    color: "#FA5151",
+    name: "审核失败",
   },
   8: {
-    color: '#00C6B8',
-    name: '待收货',
+    color: "#00C6B8",
+    name: "待收货",
   },
   9: {
-    color: '#00C6B8',
-    name: '待自提',
+    color: "#00C6B8",
+    name: "待自提",
   },
   10: {
-    color: '#00C6B8',
-    name: '已收货',
+    color: "#00C6B8",
+    name: "已收货",
   },
 };
 export default defineComponent({
-  name: 'record',
+  name: "record",
   components: {
     WithoutData,
   },
@@ -207,9 +200,14 @@ export default defineComponent({
     });
 
     // 查看详情
-    const handleItem = ({ id }) => {
+    const handleItem = ({ id, applyStatus }) => {
+      let routeName = "detail";
+      if (applyStatus === 1) {
+        commit("changeIsResetWrite", true);
+        routeName = "write";
+      }
       router.push({
-        name: 'detail',
+        name: routeName,
         query: {
           id,
         },
@@ -228,7 +226,7 @@ export default defineComponent({
         state.list[index].applyStatus = 3;
       };
 
-      canleApplyMethod(id, updateStatus);
+      cancelApplyMethod(id, updateStatus);
     };
 
     // 补充资料
@@ -243,9 +241,9 @@ export default defineComponent({
 
     // 查看自提点
     const handleTakeNothing = ({ id }) => {
-      console.log('查看自提地点');
+      console.log("查看自提地点");
       router.push({
-        name: 'takeAddress',
+        name: "takeAddress",
         query: {
           applyId: id,
         },

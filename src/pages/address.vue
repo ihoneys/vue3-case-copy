@@ -56,7 +56,7 @@ export default defineComponent({
     BottomButton
   },
   setup() {
-    const { dispatch, getters, commit } = useStore()
+    const { getters, commit } = useStore()
     const { getRequestParams: requestParams } = getters
     const { userId } = requestParams
 

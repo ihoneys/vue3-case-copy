@@ -55,7 +55,11 @@
           <span class="label-icon">*</span>
           <span>被委托人姓名</span>
         </div>
-        <van-field v-model="othersName" placeholder="请输入被委托人姓名" />
+        <van-field
+          v-model="othersName"
+          maxlength="10"
+          placeholder="请输入被委托人姓名"
+        />
       </li>
       <li class="column-item">
         <div class="column-item-left">
@@ -82,7 +86,7 @@
           @click="show = !show"
         >
           <span>{{
-            othersRelation ? othersRelation : '请选择与患者关系'
+            othersRelation ? othersRelation : "请选择与患者关系"
           }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
@@ -123,6 +127,7 @@
           <span>患者姓名</span>
         </div>
         <van-field
+          maxlength="10"
           :rules="[{ required: true, message: '请填写用户名' }]"
           v-model="patientName"
           placeholder="请输入患者姓名"
@@ -181,7 +186,7 @@
           style="padding-right: 0.08rem"
           @click="handleDischargeTime('inHosTime')"
         >
-          <span>{{ inHosTime ? inHosTime : '请选择入院时间' }}</span>
+          <span>{{ inHosTime ? inHosTime : "请选择入院时间" }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </div>
@@ -195,7 +200,7 @@
           style="padding-right: 0.08rem"
           @click="handleDischargeTime('outHosTime')"
         >
-          <span>{{ outHosTime ? outHosTime : '请选择出院时间' }}</span>
+          <span>{{ outHosTime ? outHosTime : "请选择出院时间" }}</span>
           <img class="next-icon" src="@/assets/img/next.png" alt="" />
         </div>
       </div>
@@ -215,11 +220,7 @@
       <span className="agreement">我已阅读并同意</span>
       <span className="protocol" @click="handleProtocol">《病例复印协议》</span>
     </div>
-    <van-popup
-      v-model:show="showDate"
-      position="bottom"
-      :style="{ height: '30%' }"
-    >
+    <van-popup v-model:show="showDate" position="bottom">
       <van-datetime-picker
         v-model="curDate"
         type="date"
@@ -231,7 +232,7 @@
         @cancel="showDate = !showDate"
       />
     </van-popup>
-    <van-popup v-model:show="show" position="bottom" :style="{ height: '30%' }">
+    <van-popup v-model:show="show" position="bottom">
       <van-picker
         title="选择关系"
         :columns="columns"
@@ -246,16 +247,17 @@
       @handleLeft="handleSave"
     />
   </div>
+  <router-view></router-view>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, toRaw, toRefs, watch } from 'vue';
-import { useStore } from 'vuex';
-import { useRouter, useRoute } from 'vue-router';
+import { defineComponent, reactive, ref, toRaw, toRefs, watch } from "vue";
+import { useStore } from "vuex";
+import { useRouter, useRoute } from "vue-router";
 
-import BottomButton from '@/components/bottom-button/Index.vue';
-import HeaderSteps from '@/components/steps/Index.vue';
-import IYRadio from '@/components/radio/Index.vue';
+import BottomButton from "@/components/bottom-button/Index.vue";
+import HeaderSteps from "@/components/steps/Index.vue";
+import IYRadio from "@/components/radio/Index.vue";
 
 import {
   defineSteps,
@@ -265,33 +267,35 @@ import {
   checkIdCard,
   createDialog,
   validateFunc,
-} from '../utils/utils';
+  createToast,
+} from "../utils/utils";
 
 import {
   uploadImage,
   saveApplyRecord,
-  saveApplyRecord,
   storageApplyRecord,
   getApplyRecordContext,
-} from '@/service/api';
-import { Dialog, Toast } from 'vant';
+} from "@/service/api";
+import { Toast } from "vant";
 
-const tabsList = ['本人办理', '他人代办'];
-const columns = ['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华'];
+import Comporessor from "compressorjs";
+
+const tabsList = ["本人办理", "他人代办"];
+const columns = ["父母", "子女", "夫妻", "亲属", "朋友", "其它"];
 
 const buttonContext = [
   {
-    text: '下一步',
+    text: "下一步",
     styleBtn: {
-      background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-      boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
-      color: '#fff',
+      background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
+      boxShadow: "0rem .04rem .06rem 0rem rgba(0,155,143,0.17)",
+      color: "#fff",
     },
   },
-  { text: '暂存', styleWidth: {} },
+  { text: "暂存", styleWidth: {} },
 ];
 export default defineComponent({
-  name: 'App',
+  name: "App",
   components: {
     HeaderSteps,
     BottomButton,
@@ -300,9 +304,9 @@ export default defineComponent({
   setup() {
     const router = useRouter();
     const route = useRoute();
-    console.log(route.query);
-    const { recordId, applyStatus } = route.query;
-    const { getters, commit, state: storeState, dispatch } = useStore();
+
+    const { id: recordId, applyStatus } = route.query;
+    const { getters, commit, dispatch } = useStore();
 
     const {
       getIsMyself: isMyself,
@@ -315,7 +319,7 @@ export default defineComponent({
       getApplyRecordContext(recordId)
         .then((result) => {
           console.log(result);
-          dispatch('changeStorageWriteInfoAction', result.data);
+          dispatch("changeStorageWriteInfoAction", result.data);
         })
         .catch((err) => {});
     }
@@ -371,9 +375,9 @@ export default defineComponent({
       id, //主键id
       showDate: false,
       show: false,
-      typeTime: 'inHosTime',
+      typeTime: "inHosTime",
       curDate: new Date(),
-      submissionDate: '',
+      submissionDate: "",
     });
 
     watch(
@@ -414,7 +418,7 @@ export default defineComponent({
     // 选择入出院时间
     const handelConfirmDate = (time) => {
       state.showDate = false;
-      if (state.typeTime === 'inHosTime') {
+      if (state.typeTime === "inHosTime") {
         state.inHosTime = timeFormat(time);
       } else {
         state.outHosTime = timeFormat(time);
@@ -426,7 +430,7 @@ export default defineComponent({
       const year = time.getFullYear();
       const month = time.getMonth() + 1;
       const day = time.getDate();
-      return year + '年' + month + '月' + day + '日';
+      return year + "年" + month + "月" + day + "日";
     };
 
     const confirmRelation = (val) => {
@@ -439,58 +443,73 @@ export default defineComponent({
     };
 
     const uploadRequestFunc = (file, key) => {
-      const fd = new FormData();
-      fd.append('file', file);
-      uploadImage(unitId, fd)
-        .then((res) => {
-          const { data } = res;
-          if (isObjEmpty(data)) {
-            createMessage('上传失败！');
-            return false;
-          } else {
-            let list = state[key].slice();
-            list.push({
-              url: res.data.url,
-              isImage: true,
+      if (file.length > 1) {
+        createMessage("一次最多只能上传一张！");
+        return false;
+      }
+
+      new Comporessor(file, {
+        success(result) {
+          const files = new window.File([result], file.name, {
+            type: file.type,
+          });
+          const fd = new FormData();
+          fd.append("file", files);
+          uploadImage(unitId, fd)
+            .then((res) => {
+              const { data } = res;
+              if (isObjEmpty(data)) {
+                createMessage("上传失败！");
+                return false;
+              } else {
+                let list = state[key].slice();
+                list.push({
+                  url: res.data.url,
+                  isImage: true,
+                });
+                state[key] = list;
+                return true;
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              createMessage("上传失败！");
+              return false;
             });
-            state[key] = list;
-            return true;
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          createMessage('上传失败！');
-          return false;
-        });
+        },
+        error(err) {
+          console.log(err.message);
+        },
+      });
     };
 
     // 上传患者证件
     const uploadPatientCardPositive = (file) => {
-      uploadRequestFunc(file, 'patientCardPositive');
+      uploadRequestFunc(file, "patientCardPositive");
     };
 
     // 上传身份证反面
     const uploadPatientCardReverse = (file) => {
-      uploadRequestFunc(file, 'patientCardReverse');
+      uploadRequestFunc(file, "patientCardReverse");
     };
 
     // 上传被委托人身份证正面
     const uploadOthersCardPositive = (file) => {
-      uploadRequestFunc(file, 'othersCardPositive');
+      uploadRequestFunc(file, "othersCardPositive");
     };
 
     // 上传被委托人身份证反面
     const uploadOthersCardReverse = (file) => {
-      uploadRequestFunc(file, 'othersCardReverse');
+      uploadRequestFunc(file, "othersCardReverse");
     };
 
     // 被委托人手持身份证
     const uploadOthersCardHand = (file) => {
-      uploadRequestFunc(file, 'othersCardHand');
+      uploadRequestFunc(file, "othersCardHand");
     };
 
     const saveData = () => {
-      const patientData = {
+      const patientData: any = {
         patientPhone: state.patientPhone,
         patientName: state.patientName,
         patientIdCardPros:
@@ -528,11 +547,11 @@ export default defineComponent({
         clientName: state.othersName,
         clientNameRelation: state.othersRelation,
         clientPhone: state.othersPhone,
+        clientIdCardNo: state.othersCardId,
       };
-      console.log(!!curIndex.value, 5646456);
-      return !!!curIndex.value
-        ? patientData
-        : Object.assign(patientData, ohtersData);
+      return curIndex.value
+        ? Object.assign(patientData, ohtersData)
+        : patientData;
     };
 
     const handleNext = async () => {
@@ -541,23 +560,22 @@ export default defineComponent({
         if (!validateOthersFrom()) return;
       }
       if (!state.isSelected) {
-        createDialog('请阅读并同意勾选！');
+        createDialog("请阅读并同意勾选！");
         return;
       }
       const data = saveData();
       console.log(data);
-      // return
+      // return;
       const res = await saveApplyRecord(data);
       if (res.data) {
-        commit('changeApplyRecordId', res.data);
+        commit("changeApplyRecordId", res.data);
       }
       // 提交成功时间
       state.submissionDate = getYearsMonthDay(true);
-      commit('changeWriteInfo', toRaw(state));
-      commit('changeIsMyself', curIndex.value);
-      Toast.clear();
+      commit("changeWriteInfo", toRaw(state));
+      commit("changeIsMyself", curIndex.value);
       setTimeout(() => {
-        const nextPath = curIndex.value === 1 ? '/signture' : '/copy';
+        const nextPath = curIndex.value === 1 ? "/signture" : "/copy";
         router.push(nextPath);
       });
     };
@@ -566,39 +584,39 @@ export default defineComponent({
       const patientRules = [
         {
           value: state.patientCardPositive.length,
-          text: '未上传患者身份证正面！',
+          text: "未上传患者身份证正面！",
         },
         {
           value: state.patientCardReverse.length,
-          text: '未上传患者身份证反面！',
+          text: "未上传患者身份证反面！",
         },
         {
-          value: state.patientName.replace(/\s/g, ''),
-          text: '患者姓名不能为空！',
+          value: state.patientName.replace(/\s/g, ""),
+          text: "患者姓名不能为空！",
         },
         {
           value: !checkIdCard(state.patientCardId),
-          text: '患者身份证不正确',
+          text: "患者身份证不正确",
         },
         {
           value: !checkPhone(state.patientPhone),
-          text: '患者手机号不正确！',
+          text: "患者手机号不正确！",
         },
         {
-          value: state.hosNo.replace(/\s/g, ''),
-          text: '住院号为空！',
+          value: state.hosNo.replace(/\s/g, ""),
+          text: "住院号为空！",
         },
         {
-          value: state.hospitalName.replace(/\s/g, ''),
-          text: '请输入住院院区！',
+          value: state.hospitalName.replace(/\s/g, ""),
+          text: "请输入住院院区！",
         },
         {
           value: state.inHosTime,
-          text: '请选择入院时间！',
+          text: "请选择入院时间！",
         },
         {
           value: state.outHosTime,
-          text: '请选择出院时间！',
+          text: "请选择出院时间！",
         },
       ];
       return validateFunc(patientRules);
@@ -608,31 +626,31 @@ export default defineComponent({
       const othersRules = [
         {
           value: state.othersCardPositive.length,
-          text: '未上传被委托人身份证正面！',
+          text: "未上传被委托人身份证正面！",
         },
         {
           value: state.othersCardReverse.length,
-          text: '未上传被委托人身份证反面！',
+          text: "未上传被委托人身份证反面！",
         },
         {
           value: state.othersCardHand.length,
-          text: '未上传被委托人手持身份证照',
+          text: "未上传被委托人手持身份证照",
         },
         {
-          value: state.othersName.replace(/\s/g, ''),
-          text: '被委托人姓名不能为空！',
+          value: state.othersName.replace(/\s/g, ""),
+          text: "被委托人姓名不能为空！",
         },
         {
           value: !checkPhone(state.othersPhone),
-          text: '被委托人手机号填写不正确！',
+          text: "被委托人手机号填写不正确！",
         },
         {
           value: !checkIdCard(state.othersCardId),
-          text: '被委托人身份证不正确',
+          text: "被委托人身份证不正确",
         },
         {
           value: state.othersRelation,
-          text: '请选择与患者关系',
+          text: "请选择与患者关系",
         },
       ];
       return validateFunc(othersRules);
@@ -642,8 +660,16 @@ export default defineComponent({
       const data = saveData();
       const res = await storageApplyRecord(data);
       if (res.data) {
-        commit('changeApplyRecordId', res.data);
+        commit("changeApplyRecordId", res.data);
+        createToast("暂存成功", "success");
+      } else {
+        createToast("暂存失败", "success");
       }
+    };
+
+    const handleProtocol = (e) => {
+      e.stopPropagation();
+      router.push("/write/agreement");
     };
 
     return {
@@ -666,6 +692,7 @@ export default defineComponent({
       uploadOthersCardReverse,
       uploadOthersCardHand,
       handleSave,
+      handleProtocol,
     };
   },
 });
@@ -678,6 +705,7 @@ export default defineComponent({
 .write-wrapper {
   background-color: #f5f5f5;
   padding-bottom: 0.66rem;
+  z-index: 0;
 }
 .tabs-wrapper {
   display: flex;
@@ -725,19 +753,19 @@ export default defineComponent({
     padding-right: 0.1rem;
     .positive-img {
       & :deep() .van-uploader__upload {
-        background-image: url('../assets/img/positive.png');
+        background-image: url("../assets/img/positive.png");
         background-size: 100%;
       }
     }
     .reverse-img {
       & :deep() .van-uploader__upload {
-        background-image: url('../assets/img/reverse.png');
+        background-image: url("../assets/img/reverse.png");
         background-size: 100%;
       }
     }
     .hand-img {
       & :deep() .van-uploader__upload {
-        background-image: url('../assets/img/hand.png');
+        background-image: url("../assets/img/hand.png");
         background-size: 100%;
       }
     }
