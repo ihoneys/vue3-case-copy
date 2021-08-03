@@ -78,7 +78,7 @@ import {
   checkLogistics,
 } from "@/utils/commonOrder";
 import { Dialog, Toast } from "vant";
-const buttonContext = [
+const buttonObject = [
   {
     text: "去支付",
     styleBtn: {
@@ -98,6 +98,8 @@ export default defineComponent({
     BottomButton,
   },
   setup() {
+    const buttonContext = JSON.parse(JSON.stringify(buttonObject));
+
     const route = useRoute();
     const router = useRouter();
     const { getters, commit } = useStore();
@@ -132,12 +134,16 @@ export default defineComponent({
           patientCardId: "patientIdCardNo",
           hosNo: "patientHosCardNo",
           submissionDate: "submitTime",
+          othersPhone: "clientPhone",
+          patientPhone: "patientPhone",
+          outTradeNo: "outTradeNo",
         };
         for (const myKey in keyMap) {
           state.writeInfo[myKey] = data[keyMap[myKey]];
         }
         state.data = data;
         countTime(data.submitTime);
+        console.log(data.applyStatus);
         changeIsSingleBtn(data.applyStatus);
         changIsPassAndFailReason(data.applyStatus, "审核失败");
         changeStepsCurrentIndex(data.applyStatus);
@@ -181,27 +187,32 @@ export default defineComponent({
 
     // 是否显示单个按钮
     const changeIsSingleBtn = (status) => {
-      const statusArr = [2, 8];
-      const statusBtnText = {
+      const statusArr = [4, 5, 6]; // 默认2存在
+
+      const onlyBtnText = {
         4: "取消申请",
         6: "补充资料",
         5: "等待自提/收货",
       };
+
       // 是否显示单个
-      state.isSingle = !statusArr.includes(status);
+      state.isSingle = statusArr.includes(status); // true 为显示单个 false 显示两个
+
       console.log(state.isSingle, "state.isSingle");
 
       // 如果显示单个改变按钮文字
       if (state.isSingle) {
-        state.buttonContext[0].text = statusBtnText[status];
-        state.buttonContext[0].styleBtn.background = "#fff";
-        state.buttonContext[0].styleBtn.color = "#00C6B8";
+        state.buttonContext[0].text = onlyBtnText[status];
         state.buttonContext[0].styleBtn.border = ".01rem solid #00C6B8";
+        state.buttonContext[0].styleBtn.color = "#00C6B8";
+        state.buttonContext[0].styleBtn.background = "#ffffff";
       } else {
-        if (status === 8) {
+        if (status === 8 || status === 9) {
           state.buttonContext[0].text = "确认收件";
           state.buttonContext[0].styleBtn.background = "#00C6B8";
+          state.buttonContext[0].styleBtn.color = "#fff";
           state.buttonContext[0].styleBtn.border = ".01rem solid #00C6B8";
+          state.buttonContext[1].text = "查看物流";
         }
       }
     };
@@ -295,7 +306,7 @@ export default defineComponent({
       const {
         data: { applyStatus },
       } = state;
-      console.log(applyStatus, "788");
+
       if (executeObj === "right") {
         if (!strategyBtnRight[applyStatus])
           return console.log("状态出错！right");
@@ -334,7 +345,7 @@ export default defineComponent({
 .detail-wrapper {
   min-height: 100vh;
   padding: 0.1rem 0.12rem;
-  padding-bottom: .8rem;
+  padding-bottom: 0.8rem;
   background-color: #f5f5f5;
   box-sizing: border-box;
   .apply-info-box {

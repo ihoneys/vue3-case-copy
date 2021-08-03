@@ -84,6 +84,7 @@ import {
 
 import SignturePad from "signature_pad";
 import html2canvas from "html2canvas";
+import { resolve } from "dns";
 
 const buttonContext = [
   {
@@ -170,7 +171,7 @@ export default defineComponent({
     let signaturePad;
     const initSign = () => {
       const canvas = document.getElementById("signCanvas") as HTMLCanvasElement;
-      
+
       canvas.width = document.documentElement.clientWidth - 5;
 
       signaturePad = new SignturePad(canvas, {
@@ -179,21 +180,25 @@ export default defineComponent({
       });
     };
 
-    const _uploadImageFunc = async (imageBse64, isSign = true) => {
-      const fd = new FormData();
-      fd.append("base64Data", imageBse64);
-      const res = await uploadImageBas64(fd);
-      const { data } = res;
-      if (isObjEmpty(data)) {
-        createMessage("上传失败！");
-      } else {
-        if (isSign) {
-          signImage.value = data.url;
-          commit("changeSignImage", data.url);
+    const _uploadImageFunc = (imageBse64, isSign = true) => {
+      return new Promise(async (resolve, reject) => {
+        const fd = new FormData();
+        fd.append("base64Data", imageBse64);
+        const res = await uploadImageBas64(fd);
+        const { data } = res;
+        if (isObjEmpty(data)) {
+          createMessage("上传失败！");
+          reject("上传失败！");
         } else {
-          powerAttorneyPic = data.url;
+          if (isSign) {
+            signImage.value = data.url;
+            commit("changeSignImage", data.url);
+          } else {
+            powerAttorneyPic = data.url;
+            resolve(data.url);
+          }
         }
-      }
+      });
     };
 
     const getImageAndNext = async () => {
@@ -208,14 +213,15 @@ export default defineComponent({
         scale: 1, //设置放大的倍数
       });
       const imageBas64 = canvas.toDataURL("image/jpeg");
-      _uploadImageFunc(imageBas64, false);
 
+      const resUrl = await _uploadImageFunc(imageBas64, false)
+      
       const data = {
         applyId: applyRecordId,
         clientIdCardNo: othersCardId,
         clientName: othersName,
         clientSignature: signImage.value,
-        powerAttorneyPic,
+        powerAttorneyPic: resUrl,
       };
       const { returnCode, returnMsg } = await saveMatterContent(data);
       if (returnCode === 0) {
@@ -242,7 +248,7 @@ export default defineComponent({
     };
 
     const handlePrev = () => {
-      router.push("/write");
+      router.go(-1)
     };
 
     const handleReset = () => {

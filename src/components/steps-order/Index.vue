@@ -34,63 +34,64 @@
 </template>
 
 <script lang="ts">
-import steps0_icon from '@/assets/img/steps0.png';
-import steps0_iconFill from '@/assets/img/steps0-fill.png';
+import steps0_icon from "@/assets/img/steps0.png";
+import steps0_iconFill from "@/assets/img/steps0-fill.png";
 
-import steps1_icon from '@/assets/img/steps1.png';
-import steps1_iconFill from '@/assets/img/steps1-fill.png';
+import steps1_icon from "@/assets/img/steps1.png";
+import steps1_iconFill from "@/assets/img/steps1-fill.png";
 
-import steps2_icon from '@/assets/img/steps2.png';
-import steps2_iconFill from '@/assets/img/steps2-fill.png';
-import steps2_err from '@/assets/img/steps2-err.png';
+import steps2_icon from "@/assets/img/steps2.png";
+import steps2_iconFill from "@/assets/img/steps2-fill.png";
+import steps2_err from "@/assets/img/steps2-err.png";
 
-import steps3_icon from '@/assets/img/steps3.png';
-import steps3_iconFill from '@/assets/img/steps3-fill.png';
+import steps3_icon from "@/assets/img/steps3.png";
+import steps3_iconFill from "@/assets/img/steps3-fill.png";
 
-import steps4_icon from '@/assets/img/steps4.png';
-import steps4_iconFill from '@/assets/img/steps4-fill.png';
+import steps4_icon from "@/assets/img/steps4.png";
+import steps4_iconFill from "@/assets/img/steps4-fill.png";
 
-const orderSteps = [
+import { defineComponent, reactive, toRefs, watchEffect, computed } from "vue";
+
+const statusMap = [
   {
-    title: '待审核',
+    title: "待审核",
     icon: steps0_icon,
     fillIcon: steps0_iconFill,
-    color: '#666',
-    fillColor: '#00c6b8',
+    color: "#666",
+    fillColor: "#00c6b8",
   },
   {
-    title: '审核中',
+    title: "审核中",
     icon: steps1_icon,
     fillIcon: steps1_iconFill,
-    color: '#666',
-    fillColor: '#00c6b8',
+    color: "#666",
+    fillColor: "#00c6b8",
   },
   {
-    title: '审核通过',
+    title: "审核通过",
     icon: steps2_icon,
     fillIcon: steps2_iconFill,
-    color: '#666',
-    fillColor: '#00c6b8',
+    color: "#666",
+    fillColor: "#00c6b8",
   },
   {
-    title: '自提/收货',
+    title: "自提/收货",
     icon: steps3_icon,
     fillIcon: steps3_iconFill,
-    color: '#666',
-    fillColor: '#00c6b8',
+    color: "#666",
+    fillColor: "#00c6b8",
   },
   {
-    title: '已完成',
+    title: "已完成",
     icon: steps4_icon,
     fillIcon: steps4_iconFill,
-    color: '#666',
-    fillColor: '#00c6b8',
+    color: "#666",
+    fillColor: "#00c6b8",
   },
 ];
-import { defineComponent, reactive, toRefs, watchEffect, computed } from 'vue';
 
 export default defineComponent({
-  name: 'App',
+  name: "App",
   props: {
     currentIndex: {
       type: Number,
@@ -102,7 +103,7 @@ export default defineComponent({
     },
     failReason: {
       type: String,
-      default: () => '',
+      default: () => "",
     },
     statusCode: {
       type: Number,
@@ -110,6 +111,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const orderSteps = JSON.parse(JSON.stringify(statusMap));
     const state = reactive({
       percent: 0,
       failReason: props.failReason,
@@ -121,14 +123,16 @@ export default defineComponent({
     watchEffect(() => {
       state.currentIndex = props.currentIndex;
       state.failReason = props.failReason;
-      state.statusCode = props.statusCode
+      state.statusCode = props.statusCode;
     });
 
     if (state.statusCode === 6 || state.statusCode === 7) {
-      orderSteps[2].title = '审核失败';
+      orderSteps[2].title = "审核失败";
       orderSteps[2].fillIcon = steps2_err;
       orderSteps[2].fillColor = "#FA5151";
     }
+
+    console.log(state.statusCode, "statusCode");
 
     const percent = computed(() => {
       if (state.currentIndex === 3) {

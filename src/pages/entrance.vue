@@ -40,7 +40,7 @@ import { isObjEmpty } from "@/utils/utils";
 import { getUrlParams, aseDecrypt } from "../utils/utils";
 
 export default defineComponent({
-  name: "Home",
+  name: "home",
   setup() {
     const { commit, getters } = useStore();
     const { getRequestParams: requestParams } = getters;
@@ -51,26 +51,32 @@ export default defineComponent({
 
     const listData = ref(entranceData);
 
-    onMounted(async () => {
-      if (!isObjEmpty(query)) {
-        const delePath = query.userInfo.replace("#/home", "");
-        var userInfo = aseDecrypt(delePath);
-        userInfo = JSON.parse(userInfo);
-        let obj = {};
-        for (const key in userInfo) {
-          obj[key] = userInfo[key];
-        }
-        commit("changeRequestParams", obj);
+    if (!isObjEmpty(query)) {
+      const delePath = query.userInfo.replace("#/home", "");
+      var userInfo = aseDecrypt(delePath);
+      userInfo = JSON.parse(userInfo);
+      let obj = {};
+      for (const key in userInfo) {
+        obj[key] = userInfo[key];
       }
+      commit("changeRequestParams", obj);
+    }
+
+    const initializeUnitConfig = async () => {
 
       const { data } = await getHomeUnitConfig(
-        unitId !== 0 ? unitId : userInfo.unitId
+        unitId === 0 ? userInfo?.unitId : unitId
       );
+
       if (!isObjEmpty(data)) {
         listData.value[0].content = data["suitablePeople"];
         listData.value[1].content = data["obtainMode"];
         listData.value[2].content = data["contactMode"];
       }
+    };
+
+    onMounted(() => {
+      initializeUnitConfig();
     });
 
     const handleDefault = () => {

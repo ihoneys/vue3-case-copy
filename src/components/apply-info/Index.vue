@@ -6,28 +6,38 @@
     <template v-if="!applyInfo.isMyself || applyInfo.isMyself === 1">
       <li v-if="applyInfo.othersName">
         <span className="content-name">申请人：</span>
-        <span className="content-text">{{applyInfo.othersName}}</span>
+        <span className="content-text">{{ applyInfo.othersName }}</span>
+      </li>
+      <li v-if="applyInfo.outTradeNo">
+        <span className="content-name">申请订单号：</span>
+        <span className="content-text">{{ applyInfo.outTradeNo }}</span>
       </li>
       <li v-if="applyInfo.othersCardId">
         <span className="content-name">申请人证件号：</span>
-        <span className="content-text">{{applyInfo.othersCardId}}</span>
+        <span className="content-text">{{ applyInfo.othersCardId }}</span>
       </li>
     </template>
     <li>
+      <span className="content-name">申请人手机号：</span>
+      <span className="content-text">{{
+        applyInfo.othersPhone ? applyInfo.othersPhone : applyInfo.patientPhone
+      }}</span>
+    </li>
+    <li>
       <span className="content-name">申请医院：</span>
-      <span className="content-text">{{applyInfo.hospitalName}}</span>
+      <span className="content-text">{{ applyInfo.hospitalName }}</span>
     </li>
     <li>
       <span className="content-name">患者姓名：</span>
-      <span className="content-text">{{applyInfo.patientName}}</span>
+      <span className="content-text">{{ applyInfo.patientName }}</span>
     </li>
     <li>
       <span className="content-name">患者身份证：</span>
-      <span className="content-text">{{applyInfo.patientCardId}}</span>
+      <span className="content-text">{{ applyInfo.patientCardId }}</span>
     </li>
     <li>
       <span className="content-name">住院号：</span>
-      <span className="content-text">{{applyInfo.hosNo}}</span>
+      <span className="content-text">{{ applyInfo.hosNo }}</span>
     </li>
     <li>
       <span className="content-name">提交日期：</span>
@@ -44,9 +54,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 export default defineComponent({
-  name: 'ApplyContent',
+  name: "ApplyContent",
   props: {
     applyInfo: {
       type: Object,
@@ -58,7 +68,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    console.log(props.applyInfo)
+    console.log(props.applyInfo);
   },
 });
 </script>

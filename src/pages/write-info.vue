@@ -316,12 +316,13 @@ export default defineComponent({
     } = getters;
 
     if (isResetWrite) {
+      // commit("changeApplyRecordId", res.data);
       getApplyRecordContext(recordId)
         .then((result) => {
           console.log(result);
           dispatch("changeStorageWriteInfoAction", result.data);
         })
-        .catch((err) => {});
+        .catch((err) => console.log(err));
     }
 
     const newWriteInfo = Object.assign({}, writeInfo);
@@ -349,6 +350,7 @@ export default defineComponent({
     } = newWriteInfo;
 
     const { unitId, userId, openId } = requestParams;
+
     const curIndex = ref(isMyself);
 
     const steps = ref(defineSteps(!curIndex.value));
@@ -383,23 +385,28 @@ export default defineComponent({
     watch(
       () => writeInfo,
       (cur, prev) => {
+        console.log(cur);
+
         state.othersCardReverse = cur.othersCardReverse;
         state.othersCardPositive = cur.othersCardPositive;
         state.othersCardHand = cur.othersCardHand;
-        state.patientCardReverse = cur.patientCardReverse;
         state.othersCardId = cur.othersCardId;
         state.othersPhone = cur.othersPhone;
         state.othersRelation = cur.othersRelation;
+
         state.patientCardPositive = cur.patientCardPositive;
+        state.patientCardReverse = cur.patientCardReverse;
         state.patientCardId = cur.patientCardId;
         state.patientPhone = cur.patientPhone;
         state.patientName = cur.patientName;
+        state.hosNo = cur.hosNo;
         state.hospitalName = cur.hospitalName;
         state.inHosTime = cur.inHosTime;
         state.outHosTime = cur.outHosTime;
         state.feedback = cur.feedback;
-        state.hosNo = cur.hosNo;
         state.id = cur.id;
+
+        curIndex.value = cur.isMyself;
       },
       {
         deep: true,
@@ -513,11 +520,13 @@ export default defineComponent({
         patientPhone: state.patientPhone,
         patientName: state.patientName,
         patientIdCardPros:
-          state.patientCardPositive.length > 0 &&
-          state.patientCardPositive[0].url,
+          state.patientCardPositive.length > 0
+            ? state.patientCardPositive[0].url
+            : null,
         patientIdCardCons:
-          state.patientCardReverse.length > 0 &&
-          state.patientCardReverse[0].url,
+          state.patientCardReverse.length > 0
+            ? state.patientCardReverse[0].url
+            : null,
         patientIdCardNo: state.patientCardId,
         patientHosCardNo: state.hosNo,
         inHosTime: state.inHosTime,
@@ -529,6 +538,7 @@ export default defineComponent({
         openId,
         unitId,
       };
+      console.log(recordId, "recordId");
 
       // 补充资料进入
       if (recordId) {
@@ -538,12 +548,15 @@ export default defineComponent({
 
       const ohtersData = {
         clientIdCardCons:
-          state.othersCardReverse.length > 0 && state.othersCardReverse[0].url,
+          state.othersCardReverse.length > 0
+            ? state.othersCardReverse[0].url
+            : null,
         clientIdCardHold:
-          state.othersCardHand.length > 0 && state.othersCardHand[0].url,
+          state.othersCardHand.length > 0 ? state.othersCardHand[0].url : null,
         clientIdCardPros:
-          state.patientCardPositive.length > 0 &&
-          state.patientCardPositive[0].url,
+          state.othersCardPositive.length > 0
+            ? state.othersCardPositive[0].url
+            : null,
         clientName: state.othersName,
         clientNameRelation: state.othersRelation,
         clientPhone: state.othersPhone,
@@ -552,32 +565,6 @@ export default defineComponent({
       return curIndex.value
         ? Object.assign(patientData, ohtersData)
         : patientData;
-    };
-
-    const handleNext = async () => {
-      if (!validatePatientFrom()) return;
-      if (curIndex.value === 1) {
-        if (!validateOthersFrom()) return;
-      }
-      if (!state.isSelected) {
-        createDialog("请阅读并同意勾选！");
-        return;
-      }
-      const data = saveData();
-      console.log(data);
-      // return;
-      const res = await saveApplyRecord(data);
-      if (res.data) {
-        commit("changeApplyRecordId", res.data);
-      }
-      // 提交成功时间
-      state.submissionDate = getYearsMonthDay(true);
-      commit("changeWriteInfo", toRaw(state));
-      commit("changeIsMyself", curIndex.value);
-      setTimeout(() => {
-        const nextPath = curIndex.value === 1 ? "/signture" : "/copy";
-        router.push(nextPath);
-      });
     };
 
     const validatePatientFrom = () => {
@@ -654,6 +641,32 @@ export default defineComponent({
         },
       ];
       return validateFunc(othersRules);
+    };
+
+    const handleNext = async () => {
+      if (!validatePatientFrom()) return;
+      if (curIndex.value === 1) {
+        if (!validateOthersFrom()) return;
+      }
+      if (!state.isSelected) {
+        createDialog("请阅读并同意勾选！");
+        return;
+      }
+      const data = saveData();
+      // console.log(data);
+      // return;
+      const res = await saveApplyRecord(data);
+      if (res.data) {
+        commit("changeApplyRecordId", res.data);
+      }
+      // 提交成功时间
+      state.submissionDate = getYearsMonthDay(true);
+      commit("changeWriteInfo", toRaw(state));
+      commit("changeIsMyself", curIndex.value);
+      setTimeout(() => {
+        const nextPath = curIndex.value === 1 ? "/signture" : "/copy";
+        router.push(nextPath);
+      });
     };
 
     const handleSave = async () => {

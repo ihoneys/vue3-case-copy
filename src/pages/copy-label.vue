@@ -35,7 +35,6 @@
       <van-area
         title="选择省市"
         :columns-num="3"
-        :columns-placeholder="['请选择', '请选择', '请选择']"
         :area-list="areaList"
         @confirm="confirm"
         @cancel="show = !show"
@@ -129,17 +128,21 @@ export default defineComponent({
 
       if (isResetWrite) {
         const { data } = await getCopyPurposeContent(applyId)
-        state.insuranceLocation = data.reimbursementAddress
-        state.printNums = data.printingSheetsNumber
-        const copyContentSelected = findIncludes(state.copyContent, data.copyContent)
-        const copyPurposeSelected = findIncludes(state.copyPurpose, data.copyPurpose)
-        copyContentSelected.forEach(index => {
-          state.copyContent[index].checked = true
-        })
 
-        copyPurposeSelected.forEach(index => {
-          state.copyPurpose[index].checked = true
-        })
+        if (!isObjEmpty(data)) {
+          state.insuranceLocation = data.reimbursementAddress
+          state.printNums = data.printingSheetsNumber
+          const copyContentSelected = findIncludes(state.copyContent, data.copyContent)
+          const copyPurposeSelected = findIncludes(state.copyPurpose, data.copyPurpose)
+          copyContentSelected.forEach(index => {
+            state.copyContent[index].checked = true
+          })
+
+          copyPurposeSelected.forEach(index => {
+            state.copyPurpose[index].checked = true
+          })
+        }
+
       }
     }
 
@@ -246,8 +249,9 @@ export default defineComponent({
     }
 
     const handlePrev = () => {
-      const callbackPath = isMyself === 0 ? "/write" : "/signture"
-      router.push(callbackPath)
+      // const callbackPath = isMyself === 0 ? "/write" : "/signture"
+      // router.push(callbackPath)
+      router.go(-1)
     }
 
     const reduce = () => {

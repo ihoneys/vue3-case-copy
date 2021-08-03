@@ -218,7 +218,8 @@ export default defineComponent({
 
     const handlePrev = () => {
       commitChangeMailingAddress();
-      router.push("/copy");
+      // router.push("/copy");
+      router.go(-1)
     };
 
     const commitChangeMailingAddress = () => {
