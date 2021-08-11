@@ -56,7 +56,7 @@ import { saveOrUpdateAddress } from "@/service/api"
 
 import BottomButton from "@/components/bottom-button/Index.vue"
 import { Toast } from 'vant';
-import { checkPhone, createDialog } from '../utils/utils';
+import { checkPhone, createDialog, validateFunc, validateHasEmoji } from '../utils/utils';
 
 const buttonContext = [{
   text: "新增地址", styleBtn: {
@@ -92,7 +92,7 @@ export default defineComponent({
       buttonContext[0].text = '保存'
     } else {
       state.user = ""
-      state.phone = "" 
+      state.phone = ""
       state.area = ""
       state.address = ""
       state.checked = false
@@ -112,6 +112,7 @@ export default defineComponent({
 
 
     const handleBtn = async () => {
+      if (!validateFromHasEmoji()) return
       if (!validateFrom()) return
       const postData = {
         address: state.area,
@@ -148,15 +149,19 @@ export default defineComponent({
         text: "请输入详细地址",
         value: state.address,
       }]
-      const action = rules.filter(item => !item.value)
-      if (action.length) {
-        createDialog(action[0].text)
-        return false
-      } else {
-        return true
-      }
+      return validateFunc(rules)
     }
 
+    const validateFromHasEmoji = () => {
+      const emojiRules = [{
+        text: "收货人姓名不能输入特殊字符，请重新输入",
+        value: state.user,
+      }, {
+        text: "详细地址不能输入特殊字符，请重新输入",
+        value: state.address,
+      }]
+      return validateHasEmoji(emojiRules)
+    }
 
     return {
       ...toRefs(state),

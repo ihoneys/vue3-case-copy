@@ -1,5 +1,5 @@
 import { cancelApply, payOrder } from "../service/api";
-import { createToast, isObjEmpty } from "./utils";
+import { createDialog, createToast, isObjEmpty } from "./utils";
 
 export interface Res {
   // 微信需要传入的数据，数据格式定义
@@ -38,14 +38,15 @@ export async function toPay(
 }
 
 export function cancelApplyMethod(id: number, callBack = () => {}): void {
-  console.log("取消申请");
-  cancelApply({ id }).then((res) => {
-    const { returnCode } = res;
-    if (returnCode === 0) {
-      createToast("取消成功！", "success", callBack);
-    } else {
-      createToast("取消失败", "fail", callBack);
-    }
+  createDialog("确认取消？", true, () => {
+    cancelApply({ id }).then((res) => {
+      const { returnCode } = res;
+      if (returnCode === 0) {
+        createToast("取消成功！", "success", callBack);
+      } else {
+        createToast("取消失败", "fail", callBack);
+      }
+    });
   });
 }
 
@@ -59,7 +60,7 @@ export function resetWriteInfo(
   router.push({
     name: "write",
     query: {
-      recordId: id,
+      id,
       applyStatus,
     },
   });

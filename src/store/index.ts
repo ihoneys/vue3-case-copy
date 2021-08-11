@@ -33,12 +33,11 @@ interface StateInterface {
   copyPageData: CurCopyData;
 }
 const state = {
-  applyRecordId: 0,
+  applyRecordId: null,
   currentAddress: "",
   signImage: "",
   copyDialog: true,
   isResetWrite: false,
-
   updateAddress: {
     user: "",
     phone: "",

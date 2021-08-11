@@ -134,7 +134,7 @@ export default defineComponent({
     } = mailingObject;
 
     const checked = ref(way);
-    console.log(way)
+    console.log(way);
     const expressCompany = ref(expCompany);
     const columns = ref<any>([]);
     const show = ref(false);
@@ -158,11 +158,13 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      const { data } = await getExpressCompany(unitId);
-
-      if (!isObjEmpty(data)) {
-        for (const key in data) {
-          columns.value.push(data[key]);
+      console.log(columns.value.length,555555)
+      if (!columns.value.length) {
+        const { data } = await getExpressCompany(unitId);
+        if (!isObjEmpty(data)) {
+          for (const key in data) {
+            columns.value.push(data[key]);
+          }
         }
       }
 
@@ -171,7 +173,6 @@ export default defineComponent({
         if (!isObjEmpty(data)) {
           checked.value = data.collectionMethod ? "1" : "2";
           expressCompany.value = data.expressCompany;
-          takeAddress.value = data.expressAddress;
         }
       }
     });
@@ -209,6 +210,7 @@ export default defineComponent({
       } else {
         postData.pickUpAddress = null;
       }
+
       const { returnCode } = await saveMailingData(postData);
 
       if (returnCode === 0) {
@@ -218,8 +220,7 @@ export default defineComponent({
 
     const handlePrev = () => {
       commitChangeMailingAddress();
-      // router.push("/copy");
-      router.go(-1)
+      router.go(-1);
     };
 
     const commitChangeMailingAddress = () => {

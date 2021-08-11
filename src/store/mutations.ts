@@ -96,6 +96,7 @@ const mutations = {
   changeCurrentAddressAndId(state, { addressId, currentAddress }) {
     state.mailing.addressId = addressId;
     state.mailing.mailingAddress = currentAddress;
+    
   },
   changeExpressCompany(state, value) {
     state.mailing.expressCompany = value;

@@ -10,9 +10,9 @@ import "vant/lib/index.less";
 
 const app = createApp(App);
 
-import VConsole from "vconsole";
-let vconsole = new VConsole();
-export default vconsole;
+// import VConsole from "vconsole";
+// let vconsole = new VConsole();
+// export default vconsole;
 
 import {
   Progress,
@@ -62,10 +62,10 @@ app
   .use(Overlay)
   .mount("#app");
 
-app.config.globalProperties.$filters = {
-  // decrypt(value) {
-  //     return sm4Decrypt(value);
-  // },
-};
+// app.config.globalProperties.$filters = {
+//   decrypt(value) {
+//     return value;
+//   },
+// };
 // import FastClick from 'fastclick'
 // FastClick.attach(document.body)

@@ -84,7 +84,6 @@ import {
 
 import SignturePad from "signature_pad";
 import html2canvas from "html2canvas";
-import { resolve } from "dns";
 
 const buttonContext = [
   {
@@ -159,6 +158,7 @@ export default defineComponent({
     const getPowerAttorneyRequest = async () => {
       const { data } = await getPowerAttorney(applyRecordId);
       if (!isObjEmpty(data)) {
+        console.log(data);
         state.patientName = data.patientName;
         state.patientCardId = data.patientIdCardNo;
         state.othersName = data.clientName;
@@ -214,12 +214,14 @@ export default defineComponent({
       });
       const imageBas64 = canvas.toDataURL("image/jpeg");
 
-      const resUrl = await _uploadImageFunc(imageBas64, false)
-      
+      const resUrl = await _uploadImageFunc(imageBas64, false);
+
       const data = {
         applyId: applyRecordId,
         clientIdCardNo: othersCardId,
         clientName: othersName,
+        patientName: patientName,
+        patientIdCardNo: patientCardId,
         clientSignature: signImage.value,
         powerAttorneyPic: resUrl,
       };
@@ -248,7 +250,7 @@ export default defineComponent({
     };
 
     const handlePrev = () => {
-      router.go(-1)
+      router.go(-1);
     };
 
     const handleReset = () => {
@@ -310,7 +312,7 @@ export default defineComponent({
   }
   .content {
     padding: 0.2rem 0.15rem 0 0.2rem;
-    padding-bottom: 0.88rem;
+    padding-bottom: 1.28rem;
     height: 100%;
     font-size: 0.16rem;
     box-sizing: border-box;

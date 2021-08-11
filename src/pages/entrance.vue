@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
+import { defineComponent, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -63,7 +63,6 @@ export default defineComponent({
     }
 
     const initializeUnitConfig = async () => {
-
       const { data } = await getHomeUnitConfig(
         unitId === 0 ? userInfo?.unitId : unitId
       );

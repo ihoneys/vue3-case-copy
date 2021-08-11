@@ -1,8 +1,8 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { nextTick } from "vue";
 import { Toast } from "vant";
 
-import { debounce } from "../utils/utils";
+import { createDialog, debounce } from "../utils/utils";
 import { DEV_BASE_URL, PRO_BASE_URL, TEST_BASE_URL, TIMEOUT } from "./config";
 
 import qs from "qs";
@@ -14,6 +14,8 @@ const envMap = {
 };
 
 const base_URL = envMap[import.meta.env.MODE];
+
+console.log(base_URL,'路径地址')
 
 // 声明一个 Map 用于存储每个请求的标识 和 取消函数
 const pending = new Map();
@@ -107,7 +109,6 @@ const instance = axios.create({
   timeout: TIMEOUT,
 });
 
-let promiseTimeout;
 // 请求
 instance.interceptors.request.use(
   (config: AxiosRequestConfig) => {
@@ -127,9 +128,6 @@ instance.interceptors.request.use(
 
     // 2.某一些请求要求用户必须携带token, 如果没有携带, 那么直接跳转到登录页面
 
-    // promiseTimeout = setInterval(() => {
-    //   return Promise.reject("请求超时")
-    // }, TIMEOUT)
     // 3.params/data序列化的操作
     if (config.url?.includes("/file/upload")) {
       config.headers["Content-Type"] = "multipart/form-data";
@@ -143,17 +141,18 @@ instance.interceptors.request.use(
 );
 
 instance.interceptors.response.use(
-  (res: any) => {
-    // clearInterval(promiseTimeout)
+  (res: AxiosResponse) => {
     removePending(res);
     closeLoading();
-    // if (res.data.returnCode === 0) {
-    //   return res.data;
-    // }
-    return res.data;
-    // else {
-    //   return Promise.reject(res.data.returnMsg)
-    // }
+    
+    const { returnCode, returnMsg } = res.data;
+    if (returnCode === 2 || returnCode === 1) {
+      createDialog(returnMsg || "请求失败");
+    }
+
+    if (returnCode === 0) {
+      return res.data;
+    }
   },
   (err) => {
     closeLoading();

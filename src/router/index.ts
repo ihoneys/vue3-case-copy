@@ -5,10 +5,10 @@ import {
 } from "vue-router";
 import { clearPending } from "../service/request";
 import routes from "./path";
-// const routerHash = createWebHashHistory()
-const routerHistory = createWebHistory();
+// const routerHash = createWebHashHistory();
+// const routerHistory = createWebHistory();
 const router = createRouter({
-  history: routerHistory,
+  history: createWebHistory("medical-record-front"),
   routes,
 });
 

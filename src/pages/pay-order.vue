@@ -43,9 +43,8 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter()
-    const { state, getters } = useStore()
+    const { state, getters, commit } = useStore()
     const { getApplyRecordId: recordId, getNewWriteInfo: writeInfo, getRequestParams: requestParams, getIsResetWrite: isResetWrite } = getters
-    console.log(writeInfo, 'writeInfo')
 
     let steps = ref(defineSteps(!state.writeInfo.isMyself))
 
@@ -56,7 +55,7 @@ export default defineComponent({
       steps.value[steps.value.length - 1].title = '重新提交';
     }
 
-    const fee = ref(100)
+    const fee = ref(0)
     const { unitId, openId, userId } = requestParams
 
     // 加载支付金额
@@ -87,8 +86,10 @@ export default defineComponent({
         })
       } else {
         createToast('重新提交成功', 'success', () => {
+          commit('changeIsResetWrite', false)
           router.push('/record')
         })
+
       }
     }
 

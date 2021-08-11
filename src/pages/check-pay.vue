@@ -22,11 +22,11 @@ export default defineComponent({
       try {
         const { returnCode } = await checkPayOrder(applyId);
         const isSuccessText = returnCode === 0 ? "支付成功！" : "支付失败！";
-        createDialog(isSuccessText, () => {
+        createDialog(isSuccessText, false, () => {
           router.push("/record");
         });
       } catch (error) {
-        createDialog("支付查询确认失败！", () => {
+        createDialog("支付查询确认失败！", false, () => {
           router.push("/record");
         });
       }

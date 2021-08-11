@@ -139,13 +139,17 @@ export default defineComponent({
           outTradeNo: "outTradeNo",
         };
         for (const myKey in keyMap) {
-          state.writeInfo[myKey] = data[keyMap[myKey]];
+          if (myKey === "isMyself") {
+            state.writeInfo[myKey] = data[keyMap[myKey]] ? 0 : 1;
+          } else {
+            state.writeInfo[myKey] = data[keyMap[myKey]];
+          }
         }
         state.data = data;
         countTime(data.submitTime);
-        console.log(data.applyStatus);
+        // console.log(data.applyStatus);
         changeIsSingleBtn(data.applyStatus);
-        changIsPassAndFailReason(data.applyStatus, "审核失败");
+        changIsPassAndFailReason(data.applyStatus, data.failAuditReason);
         changeStepsCurrentIndex(data.applyStatus);
       }
     };
@@ -180,7 +184,7 @@ export default defineComponent({
     const changIsPassAndFailReason = (status, failReason) => {
       const noPassStatus = [6, 7];
       state.isPass = !noPassStatus.includes(status);
-      if (status === 6) {
+      if (noPassStatus.includes(status)) {
         state.failReason = failReason;
       }
     };
@@ -193,6 +197,7 @@ export default defineComponent({
         4: "取消申请",
         6: "补充资料",
         5: "等待自提/收货",
+        9: "自提点查看",
       };
 
       // 是否显示单个
@@ -212,7 +217,8 @@ export default defineComponent({
           state.buttonContext[0].styleBtn.background = "#00C6B8";
           state.buttonContext[0].styleBtn.color = "#fff";
           state.buttonContext[0].styleBtn.border = ".01rem solid #00C6B8";
-          state.buttonContext[1].text = "查看物流";
+          state.buttonContext[1].text =
+            status === 8 ? "查看物流" : "查看自提点";
         }
       }
     };
@@ -268,7 +274,7 @@ export default defineComponent({
         if (returnCode === 0) {
           receiptText = "收件成功！";
           state.currentIndex = 4; // 头部进度条更新
-          state.applyStatus = 10; // 已完成
+          state.data.applyStatus = 10; // 已完成
         }
         Toast.success(receiptText);
       });
@@ -279,7 +285,15 @@ export default defineComponent({
         cancelApplyMethod(state.data.id, () => {
           router.push("/record");
         }),
-      8: checkLogistics,
+      8: () => checkLogistics(state.data.expressNo),
+      9: () => {
+        router.push({
+          path: "/takeAddress",
+          query: {
+            applyId: id,
+          },
+        });
+      },
     };
 
     const strategyBtnRight = {
@@ -299,6 +313,7 @@ export default defineComponent({
         resetWriteInfo(router, commit, id as string, state.data.applyStatus),
       5: () => console.log("等待自提/收货"),
       8: confirmReceipt,
+      9: confirmReceipt,
     };
 
     // 按钮执行对应方法

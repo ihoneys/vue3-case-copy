@@ -3,20 +3,18 @@
     <li>
       <span className="headerline">申请信息</span>
     </li>
-    <template v-if="!applyInfo.isMyself || applyInfo.isMyself === 1">
-      <li v-if="applyInfo.othersName">
-        <span className="content-name">申请人：</span>
-        <span className="content-text">{{ applyInfo.othersName }}</span>
-      </li>
-      <li v-if="applyInfo.outTradeNo">
-        <span className="content-name">申请订单号：</span>
-        <span className="content-text">{{ applyInfo.outTradeNo }}</span>
-      </li>
-      <li v-if="applyInfo.othersCardId">
-        <span className="content-name">申请人证件号：</span>
-        <span className="content-text">{{ applyInfo.othersCardId }}</span>
-      </li>
-    </template>
+    <li v-if="applyInfo.othersName && applyInfo.isMyself === 1">
+      <span className="content-name">申请人：</span>
+      <span className="content-text">{{ applyInfo.othersName }}</span>
+    </li>
+    <li v-if="applyInfo.outTradeNo">
+      <span className="content-name">申请订单号：</span>
+      <span className="content-text">{{ applyInfo.outTradeNo }}</span>
+    </li>
+    <li v-if="applyInfo.othersCardId && applyInfo.isMyself === 1">
+      <span className="content-name">申请人证件号：</span>
+      <span className="content-text">{{ applyInfo.othersCardId }}</span>
+    </li>
     <li>
       <span className="content-name">申请人手机号：</span>
       <span className="content-text">{{

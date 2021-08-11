@@ -203,7 +203,7 @@ export default defineComponent({
     const handleItem = ({ id, applyStatus }) => {
       let routeName = "detail";
       if (applyStatus === 1) {
-        commit("changeIsResetWrite", true);
+        // commit("changeIsResetWrite", true);
         routeName = "write";
       }
       router.push({
@@ -306,7 +306,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 0.76rem;
+  width: 0.90rem;
   height: 0.3rem;
   border-radius: 0.5rem;
   font-size: 0.12rem;

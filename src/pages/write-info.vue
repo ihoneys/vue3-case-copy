@@ -241,7 +241,7 @@
       />
     </van-popup>
     <BottomButton
-      :isSingle="false"
+      :isSingle="isResetWrite"
       :buttonContext="buttonContext"
       @handleDefault="handleNext"
       @handleLeft="handleSave"
@@ -268,6 +268,7 @@ import {
   createDialog,
   validateFunc,
   createToast,
+  validateHasEmoji,
 } from "../utils/utils";
 
 import {
@@ -313,10 +314,13 @@ export default defineComponent({
       getNewWriteInfo: writeInfo,
       getRequestParams: requestParams,
       getIsResetWrite: isResetWrite,
+      getApplyRecordId: applyRecordId,
     } = getters;
 
-    if (isResetWrite) {
-      // commit("changeApplyRecordId", res.data);
+    console.log(applyRecordId, "applyRecordId");
+    console.log(isResetWrite, "isResetWrite");
+
+    if (isResetWrite || recordId) {
       getApplyRecordContext(recordId)
         .then((result) => {
           console.log(result);
@@ -351,6 +355,7 @@ export default defineComponent({
 
     const { unitId, userId, openId } = requestParams;
 
+    console.log(isMyself, "77897979");
     const curIndex = ref(isMyself);
 
     const steps = ref(defineSteps(!curIndex.value));
@@ -392,6 +397,7 @@ export default defineComponent({
         state.othersCardHand = cur.othersCardHand;
         state.othersCardId = cur.othersCardId;
         state.othersPhone = cur.othersPhone;
+        state.othersName = cur.othersName;
         state.othersRelation = cur.othersRelation;
 
         state.patientCardPositive = cur.patientCardPositive;
@@ -540,10 +546,13 @@ export default defineComponent({
       };
       console.log(recordId, "recordId");
 
+      if (applyRecordId || recordId) {
+        patientData.id = recordId ? state.id : applyRecordId;
+      }
+
       // 补充资料进入
       if (recordId) {
         patientData.applyStatus = applyStatus;
-        patientData.id = state.id;
       }
 
       const ohtersData = {
@@ -642,31 +651,70 @@ export default defineComponent({
       ];
       return validateFunc(othersRules);
     };
+    const validatePatientFromIsEmoji = () => {
+      const emojiRules = [
+        {
+          value: state.patientName,
+          text: "患者姓名不能输入特殊字符，请重新输入",
+        },
+        {
+          value: state.hosNo,
+          text: "住院号不能输入特殊字符，请重新输入",
+        },
+        {
+          value: state.hospitalName,
+          text: "住院院区不能输入特殊字符，请重新输入",
+        },
+        {
+          value: state.feedback,
+          text: "反馈内容不能输入特殊字符，请重新输入",
+        },
+      ];
+      return validateHasEmoji(emojiRules);
+    };
+
+    const validateOthersFromIsEmoji = () => {
+      const emojiOthersRules = [
+        {
+          value: state.othersName,
+          text: "被委托人姓名不能输入特殊字符，请重新输入",
+        },
+      ];
+      return validateHasEmoji(emojiOthersRules);
+    };
 
     const handleNext = async () => {
+      if (!validatePatientFromIsEmoji()) return;
       if (!validatePatientFrom()) return;
       if (curIndex.value === 1) {
+        if (!validateOthersFromIsEmoji()) return;
         if (!validateOthersFrom()) return;
       }
+
       if (!state.isSelected) {
         createDialog("请阅读并同意勾选！");
         return;
       }
       const data = saveData();
-      // console.log(data);
+      console.log(data, "11111data");
+      // commit("changeWriteInfo", toRaw(state));
+      // const nextPath = curIndex.value === 1 ? "/signture" : "/copy";
+      //     router.push(nextPath);
       // return;
       const res = await saveApplyRecord(data);
+      console.log(!res.data);
+
       if (res.data) {
         commit("changeApplyRecordId", res.data);
+        // 提交成功时间
+        state.submissionDate = getYearsMonthDay(true);
+        commit("changeWriteInfo", toRaw(state));
+        commit("changeIsMyself", curIndex.value);
+        setTimeout(() => {
+          const nextPath = curIndex.value === 1 ? "/signture" : "/copy";
+          router.push(nextPath);
+        });
       }
-      // 提交成功时间
-      state.submissionDate = getYearsMonthDay(true);
-      commit("changeWriteInfo", toRaw(state));
-      commit("changeIsMyself", curIndex.value);
-      setTimeout(() => {
-        const nextPath = curIndex.value === 1 ? "/signture" : "/copy";
-        router.push(nextPath);
-      });
     };
 
     const handleSave = async () => {
@@ -691,6 +739,7 @@ export default defineComponent({
       tabsList,
       curIndex,
       columns,
+      isResetWrite,
       buttonContext,
       minDate: new Date(2010, 1, 1),
       maxDate: new Date(2025, 10, 1),

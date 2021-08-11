@@ -12,41 +12,43 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { defineComponent, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
-import { getHospitalConfigNotice } from '@/service/api';
+import { getHospitalConfigNotice } from "@/service/api";
 
-import BottomButton from '@/components/bottom-button/Index.vue';
-import { useStore } from 'vuex';
+import BottomButton from "@/components/bottom-button/Index.vue";
+import { useStore } from "vuex";
 
 const buttonContext = [
   {
-    text: '下一步',
+    text: "下一步",
     styleBtn: {
-      background: 'linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)',
-      boxShadow: '0rem .04rem .06rem 0rem rgba(0,155,143,0.17)',
-      color: '#fff',
+      background: "linear-gradient(90deg, #00D2A3 0%, #02C6B8 100%)",
+      boxShadow: "0rem .04rem .06rem 0rem rgba(0,155,143,0.17)",
+      color: "#fff",
     },
   },
 ];
 export default defineComponent({
-  name: 'App',
+  name: "App",
   components: {
     BottomButton,
   },
   setup() {
     const router = useRouter();
-    const { getters } = useStore();
+    const { getters, commit } = useStore();
     const { getRequestParams: requestParams } = getters;
     const { unitId } = requestParams;
-    const content = ref<string>('');
+    const content = ref<string>("");
     onMounted(async () => {
       const { data } = await getHospitalConfigNotice(unitId);
       content.value = data;
     });
     const handleNext = () => {
-      router.push('/write');
+      commit("changeApplyRecordId", null);
+      commit("changeIsResetWrite", false);
+      router.push("/write");
     };
     return {
       buttonContext,
