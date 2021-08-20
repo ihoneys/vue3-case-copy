@@ -13,6 +13,7 @@ import { defineComponent, nextTick, provide, ref } from "vue";
 export default defineComponent({
   name: "App",
   setup() {
+    // 更新缓存组件
     const isRouterAlive = ref(true);
     const reload = () => {
       isRouterAlive.value = false;
@@ -21,7 +22,10 @@ export default defineComponent({
       });
     };
     provide("reload", reload);
+    // 需要缓存的组件
     const includeList = ref(["record"]);
+    
+
     return {
       isRouterAlive,
       includeList,
@@ -31,16 +35,4 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-.pd-r-15 {
-  padding-right: 0.15rem;
-}
-.pd-l-15 {
-  padding-left: 0.15rem;
-}
-.mt-10 {
-  margin-top: 0.1rem;
-}
-.mb-10 {
-  margin-bottom: 0.1rem;
-}
 </style>

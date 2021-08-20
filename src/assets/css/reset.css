@@ -104,3 +104,15 @@ a:hover {
 .pr-15 {
   padding-right: .15rem;
 }
+.pd-r-15 {
+  padding-right: 0.15rem;
+}
+.pd-l-15 {
+  padding-left: 0.15rem;
+}
+.mt-10 {
+  margin-top: 0.1rem;
+}
+.mb-10 {
+  margin-bottom: 0.1rem;
+}

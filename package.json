@@ -4,6 +4,7 @@
     "dev": "vite",
     "build": "vite build",
     "test:build": "vite build --mode test",
+    "mirror:build": "vite build --mode mirror",
     "serve": "vite preview"
   },
   "dependencies": {

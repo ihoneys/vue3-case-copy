@@ -29,62 +29,54 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { defineComponent, onMounted, ref } from "vue";
 import { useStore } from "vuex";
 
 import { entranceData } from "@/common/local-data";
 import { getHomeUnitConfig } from "@/service/api";
 
-import { isObjEmpty } from "@/utils/utils";
-import { getUrlParams, aseDecrypt } from "../utils/utils";
+import { aseDecrypt, getUrlParams, isObjEmpty } from "@/utils/utils";
 
 export default defineComponent({
   name: "home",
   setup() {
     const { commit, getters } = useStore();
     const { getRequestParams: requestParams } = getters;
+
     const { unitId } = requestParams;
-    const router = useRouter();
 
     const query = getUrlParams();
 
     const listData = ref(entranceData);
 
     if (!isObjEmpty(query)) {
-      const delePath = query.userInfo.replace("#/home", "");
-      var userInfo = aseDecrypt(delePath);
+      var userInfo = aseDecrypt(query.userInfo);
       userInfo = JSON.parse(userInfo);
-      let obj = {};
+
+      const obj = {};
+
       for (const key in userInfo) {
         obj[key] = userInfo[key];
       }
+
       commit("changeRequestParams", obj);
     }
 
     const initializeUnitConfig = async () => {
-      const { data } = await getHomeUnitConfig(
-        unitId === 0 ? userInfo?.unitId : unitId
-      );
+      const { data } = await getHomeUnitConfig(userInfo?.unitId || unitId);
 
       if (!isObjEmpty(data)) {
         listData.value[0].content = data["suitablePeople"];
         listData.value[1].content = data["obtainMode"];
         listData.value[2].content = data["contactMode"];
       }
+      
     };
 
-    onMounted(() => {
-      initializeUnitConfig();
-    });
-
-    const handleDefault = () => {
-      router.push("/notice");
-    };
+    onMounted(initializeUnitConfig);
 
     return {
       listData,
-      handleDefault,
     };
   },
 });

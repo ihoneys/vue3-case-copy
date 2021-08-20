@@ -37,27 +37,17 @@ const mutations = {
       id,
     } = data;
     state.writeInfo.isMyself = applyType ? 0 : 1;
-    console.log(clientIdCardPros, "clientIdCardProsclientIdCardPros");
-    state.writeInfo.othersCardPositive = clientIdCardPros
-      ? [{ url: clientIdCardPros, isImage: true }]
-      : [];
+    console.log(clientIdCardPros, 'clientIdCardProsclientIdCardPros');
+    state.writeInfo.othersCardPositive = clientIdCardPros ? [{ url: clientIdCardPros, isImage: true }] : [];
 
-    state.writeInfo.othersCardReverse = clientIdCardCons
-      ? [{ url: clientIdCardCons, isImage: true }]
-      : [];
-    state.writeInfo.othersCardHand = clientIdCardHold
-      ? [{ url: clientIdCardHold, isImage: true }]
-      : [];
+    state.writeInfo.othersCardReverse = clientIdCardCons ? [{ url: clientIdCardCons, isImage: true }] : [];
+    state.writeInfo.othersCardHand = clientIdCardHold ? [{ url: clientIdCardHold, isImage: true }] : [];
     state.writeInfo.othersCardId = clientIdCardNo;
     state.writeInfo.othersName = clientName;
     state.writeInfo.othersRelation = clientNameRelation;
     state.writeInfo.othersPhone = clientPhone;
-    state.writeInfo.patientCardPositive = patientIdCardPros
-      ? [{ url: patientIdCardPros, isImage: true }]
-      : [];
-    state.writeInfo.patientCardReverse = patientIdCardCons
-      ? [{ url: patientIdCardCons, isImage: true }]
-      : [];
+    state.writeInfo.patientCardPositive = patientIdCardPros ? [{ url: patientIdCardPros, isImage: true }] : [];
+    state.writeInfo.patientCardReverse = patientIdCardCons ? [{ url: patientIdCardCons, isImage: true }] : [];
     state.writeInfo.patientCardId = patientIdCardNo;
     state.writeInfo.patientName = patientName;
     state.writeInfo.patientPhone = patientPhone;
@@ -74,6 +64,9 @@ const mutations = {
   },
   changeSignImage(state, imgUrl) {
     state.signImage = imgUrl;
+  },
+  changeClientImage(state, imgUrl) {
+    state.clientImage = imgUrl;
   },
   changeCopyData(state, data) {
     for (const key in data) {
@@ -96,7 +89,6 @@ const mutations = {
   changeCurrentAddressAndId(state, { addressId, currentAddress }) {
     state.mailing.addressId = addressId;
     state.mailing.mailingAddress = currentAddress;
-    
   },
   changeExpressCompany(state, value) {
     state.mailing.expressCompany = value;

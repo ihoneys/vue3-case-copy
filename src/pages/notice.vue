@@ -2,23 +2,18 @@
   <div class="content-wrapper">
     <h3 className="headerline">病案复印须知</h3>
     <div v-html="content" />
-    <router-link to="/write">
-      <BottomButton
-        :buttonContext="buttonContext"
-        @handleDefault="handleNext"
-      />
-    </router-link>
+    <BottomButton :buttonContext="buttonContext" @handleDefault="handleNext" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 
 import { getHospitalConfigNotice } from "@/service/api";
 
 import BottomButton from "@/components/bottom-button/Index.vue";
-import { useStore } from "vuex";
 
 const buttonContext = [
   {
@@ -41,13 +36,15 @@ export default defineComponent({
     const { getRequestParams: requestParams } = getters;
     const { unitId } = requestParams;
     const content = ref<string>("");
+    
     onMounted(async () => {
       const { data } = await getHospitalConfigNotice(unitId);
       content.value = data;
     });
+
     const handleNext = () => {
-      commit("changeApplyRecordId", null);
-      commit("changeIsResetWrite", false);
+      commit("changeApplyRecordId", null); // 从新情况已有的记录 ID 避免重复
+      commit("changeIsResetWrite", false); // 是否重填 制为 false
       router.push("/write");
     };
     return {

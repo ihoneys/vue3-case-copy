@@ -3,7 +3,13 @@ import { nextTick } from "vue";
 import { Toast } from "vant";
 
 import { createDialog, debounce } from "../utils/utils";
-import { DEV_BASE_URL, PRO_BASE_URL, TEST_BASE_URL, TIMEOUT } from "./config";
+import {
+  DEV_BASE_URL,
+  PRO_BASE_URL,
+  TEST_BASE_URL,
+  MIRROR_BASE_URL,
+  TIMEOUT,
+} from "./config";
 
 import qs from "qs";
 
@@ -11,11 +17,10 @@ const envMap = {
   development: DEV_BASE_URL,
   production: PRO_BASE_URL,
   test: TEST_BASE_URL,
+  mirror: MIRROR_BASE_URL,
 };
 
 const base_URL = envMap[import.meta.env.MODE];
-
-console.log(base_URL,'路径地址')
 
 // 声明一个 Map 用于存储每个请求的标识 和 取消函数
 const pending = new Map();
@@ -144,7 +149,7 @@ instance.interceptors.response.use(
   (res: AxiosResponse) => {
     removePending(res);
     closeLoading();
-    
+
     const { returnCode, returnMsg } = res.data;
     if (returnCode === 2 || returnCode === 1) {
       createDialog(returnMsg || "请求失败");

@@ -1,5 +1,10 @@
 import { Dialog, Toast } from "vant";
 import CryptoJS from "crypto-js";
+/**
+ *
+ * @param obj
+ * @returns {boolean}
+ */
 export function isObjEmpty(obj: any): boolean {
   return (
     obj === undefined ||
@@ -33,6 +38,14 @@ export function defineSteps(isSpilce: boolean = false): any {
     return steps;
   }
 }
+
+/**
+ *
+ * @param func 执行函数
+ * @param wait 间隔时间
+ * @param immediate 是否立即执行
+ * @returns
+ */
 
 export const debounce = (
   func: Function,
@@ -114,20 +127,15 @@ export function createToast(
 }
 
 export function getUrlParams(): any {
-  let hre = decodeURIComponent(window.location.href);
-  hre = hre.replace(/\s/g, "");
-  let query = hre.split("?")[1];
-  let obj = {};
-  if (query) {
-    var queryParams = query.split("&");
-    if (!queryParams) return false;
-    for (let i in queryParams) {
-      var typeArr = queryParams[i].split("=");
-      let key = typeArr[0];
-      let value = typeArr[1];
-      obj[key] = value;
-    }
-  }
+  let url = decodeURIComponent(window.location.href);
+  url = url.replace(/\s/g, "");
+  const params = url.match(/([^?=&]+)(=([^&]*))/g) || [];
+  const obj = params.reduce(
+    (a, v) => (
+      (a[v.slice(0, v.indexOf("="))] = v.slice(v.indexOf("=") + 1)), a
+    ),
+    {}
+  );
   return obj;
 }
 
@@ -136,18 +144,17 @@ export function validateFunc(arr) {
   if (action.length) {
     createDialog(action[0].text);
     return false;
-  } else {
-    return true;
   }
+  return true;
 }
 
 export function validateHasEmoji(arr) {
   const actions = arr.filter((item) => isEmojiCharacter(item.value));
-  if(actions.length) {
+  if (actions.length) {
     createDialog(actions[0].text);
     return false;
   } else {
-    return true
+    return true;
   }
 }
 

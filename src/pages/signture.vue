@@ -28,7 +28,7 @@
       <div class="signature-column">
         <span class="column-width">被委托人签名：</span>
         <van-image
-          v-if="signImage"
+          v-show="signImage"
           width="1.02rem"
           height="0.3rem"
           fit="cover"
@@ -36,17 +36,32 @@
         />
       </div>
       <div class="signature-column">
-        <span class="column-width">时间：</span>
-        <span>{{ currentDate }}</span>
+        <span class="column-width">委托人签名：</span>
+        <van-image
+          v-show="clientImage"
+          width="1.02rem"
+          height="0.3rem"
+          fit="cover"
+          :src="clientImage"
+        />
       </div>
-      <button class="entrusted" @click="openSign">被委托人签名</button>
+      <div class="signature-column">
+        <span class="column-width">时间：</span>
+        <span class="sign-time">{{ currentDate }}</span>
+      </div>
+      <div class="open-sign">
+        <div class="entrusted margin-right" @click="openSign('BE')">
+          被委托人签名
+        </div>
+        <div class="entrusted" @click="openSign('NO_BE')">委托人签名</div>
+      </div>
     </div>
     <van-overlay v-model:show="signShow" z-index="99">
       <div class="content-wrapper">
         <div class="close-sign" @click="signShow = false">
           <van-icon color="#ffffff" size=".24rem" name="cross" />
         </div>
-        <div class="title">被委托人签名</div>
+        <div class="title">{{ signTitle }}</div>
         <canvas class="sign-canvas" id="signCanvas" />
         <div class="confirm-btn">
           <button class="confirm reset" @click="handleReset">重置</button>
@@ -110,11 +125,15 @@ export default defineComponent({
       getRequestParams: requestParams,
       getApplyRecordId: applyRecordId,
       getSignImage,
+      getClientImage,
       getIsResetWrite: isResetWrite,
     } = getters;
 
     const signShow = ref(false);
     const signImage = ref(getSignImage);
+    const clientImage = ref(getClientImage);
+    const signTitle = ref("");
+    const curSign = ref("BE");
 
     const canvasStyle = ref({
       width: 375 + "px",
@@ -143,6 +162,7 @@ export default defineComponent({
         patientName,
         inHosArea: writeInfo.hospitalName,
       };
+      // 获取委托事项说明
       getEntrustedMattersByParams(data).then((res) => {
         const { data: matter } = res;
         if (matter) {
@@ -155,6 +175,7 @@ export default defineComponent({
       }
     });
 
+    // 重填获取委托书信息
     const getPowerAttorneyRequest = async () => {
       const { data } = await getPowerAttorney(applyRecordId);
       if (!isObjEmpty(data)) {
@@ -168,6 +189,7 @@ export default defineComponent({
       }
     };
 
+    // 初始化签名类
     let signaturePad;
     const initSign = () => {
       const canvas = document.getElementById("signCanvas") as HTMLCanvasElement;
@@ -180,27 +202,27 @@ export default defineComponent({
       });
     };
 
+    // 上传图片
     const _uploadImageFunc = (imageBse64, isSign = true) => {
       return new Promise(async (resolve, reject) => {
         const fd = new FormData();
         fd.append("base64Data", imageBse64);
         const res = await uploadImageBas64(fd);
         const { data } = res;
-        if (isObjEmpty(data)) {
+        if (!isObjEmpty(data)) {
+          if (!isSign) {
+            // 如果是上传截图 则赋值保存
+            powerAttorneyPic = data.url;
+          }
+          resolve(data.url);
+        } else {
           createMessage("上传失败！");
           reject("上传失败！");
-        } else {
-          if (isSign) {
-            signImage.value = data.url;
-            commit("changeSignImage", data.url);
-          } else {
-            powerAttorneyPic = data.url;
-            resolve(data.url);
-          }
         }
       });
     };
 
+    // 截图整个委托书
     const getImageAndNext = async () => {
       if (!signImage.value) {
         createMessage("被委托人未签名！");
@@ -208,7 +230,7 @@ export default defineComponent({
       }
       const contentCavans = document.getElementById("content") as HTMLElement;
       const canvas = await html2canvas(contentCavans, {
-        backgroundColor: null, //画出来的图片有白色的边框,不要可设置背景为透明色（null）
+        backgroundColor: "#FFFFFF", //画出来的图片有白色的边框,不要可设置背景为透明色（null）
         useCORS: true, //支持图片跨域
         scale: 1, //设置放大的倍数
       });
@@ -226,23 +248,33 @@ export default defineComponent({
         powerAttorneyPic: resUrl,
       };
       const { returnCode, returnMsg } = await saveMatterContent(data);
+
       if (returnCode === 0) {
         router.push("/copy");
       } else {
         createMessage(returnMsg);
       }
+
       // const img = new Image();
-      // img.src = canvas.toDataURL('image/png');
-      // document.querySelector('.signture-wrapper').appendChild(img);
+      // img.src = canvas.toDataURL("image/png");
+      // document.querySelector(".signture-wrapper").appendChild(img);
     };
 
-    const confirmSign = () => {
+    // 去人签名并上传
+    const confirmSign = async () => {
       if (signaturePad.isEmpty()) {
         return Toast("请签名");
       }
       const imageBse64 = signaturePad.toDataURL("image/jpeg");
       signShow.value = false;
-      _uploadImageFunc(imageBse64);
+
+      const url = await _uploadImageFunc(imageBse64);
+      console.log(url);
+      if (curSign.value === "BE") {
+        signImage.value = url;
+      } else {
+        clientImage.value = url;
+      }
     };
 
     const handleNext = () => {
@@ -261,7 +293,11 @@ export default defineComponent({
       Toast.fail(message);
     };
 
-    const openSign = () => {
+    // 打开签名
+    const openSign = (query) => {
+      signTitle.value = query === "BE" ? "被委托人签名" : "委托人签名";
+      curSign.value = query;
+
       signShow.value = true;
       setTimeout(() => {
         initSign();
@@ -275,13 +311,14 @@ export default defineComponent({
       buttonContext,
       handleNext,
       handlePrev,
-      initSign,
       handleReset,
       confirmSign,
       signImage,
+      clientImage,
       currentDate,
       canvasStyle,
       openSign,
+      signTitle,
     };
   },
 });
@@ -331,16 +368,21 @@ export default defineComponent({
     margin-top: 0.1rem;
     display: flex;
     align-items: center;
-    .sign-image {
-      width: 1.02rem;
-      height: 0.3rem;
+    .sign-time {
+      display: inline-block;
+      width: 1.2rem;
     }
   }
   .column-width {
     display: inline-block;
-    width: 65%;
+    min-width: 65%;
     text-align: right;
     color: #999999;
+  }
+  .open-sign {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
   .entrusted {
     background-color: #ffffff;
@@ -348,11 +390,13 @@ export default defineComponent({
     font-size: 0.14rem;
     border-radius: 0.04rem;
     border: 0.01rem solid #979797;
-    width: 1.68rem;
-    height: 0.44rem;
     text-align: center;
-    line-height: 0.42rem;
+    line-height: 0.44rem;
     margin-top: 0.4rem;
+    flex: 1;
+  }
+  .margin-right {
+    margin-right: 20px;
   }
 }
 .mask-wrapper {

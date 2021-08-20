@@ -10,9 +10,13 @@ import "vant/lib/index.less";
 
 const app = createApp(App);
 
-// import VConsole from "vconsole";
-// let vconsole = new VConsole();
-// export default vconsole;
+import VConsole from "vconsole";
+let vconsole;
+if (import.meta.env.MODE !== "production") {
+  vconsole = new VConsole();
+}
+
+export default vconsole;
 
 import {
   Progress,
@@ -67,5 +71,6 @@ app
 //     return value;
 //   },
 // };
-// import FastClick from 'fastclick'
-// FastClick.attach(document.body)
+
+// import Fastclick from "fastclick";
+// Fastclick.attach(document.body);

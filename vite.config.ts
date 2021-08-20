@@ -4,6 +4,7 @@ import { defineConfig, loadEnv, ConfigEnv, UserConfigExport } from "vite";
 import styleImport from "vite-plugin-style-import";
 
 export default ({ command, mode }: ConfigEnv): UserConfigExport => {
+  const isEnvProduction = mode === "production";
   return defineConfig({
     css: {
       preprocessorOptions: {
@@ -78,7 +79,8 @@ export default ({ command, mode }: ConfigEnv): UserConfigExport => {
     build: {
       terserOptions: {
         compress: {
-          drop_console: mode === "production",
+          drop_console: isEnvProduction,
+          drop_debugger: isEnvProduction,
         },
       },
     },
