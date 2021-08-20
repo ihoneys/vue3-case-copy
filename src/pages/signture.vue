@@ -186,6 +186,7 @@ export default defineComponent({
         state.othersCardId = data.clientIdCardNo;
         state.id = data.id;
         signImage.value = data.clientSignature;
+        clientImage.value = data.patientSignature
       }
     };
 
@@ -245,6 +246,7 @@ export default defineComponent({
         patientName: patientName,
         patientIdCardNo: patientCardId,
         clientSignature: signImage.value,
+        patientSignature: clientImage.value,
         powerAttorneyPic: resUrl,
       };
       const { returnCode, returnMsg } = await saveMatterContent(data);
@@ -272,8 +274,10 @@ export default defineComponent({
       console.log(url);
       if (curSign.value === "BE") {
         signImage.value = url;
+        commit("changeSignImage", url);
       } else {
         clientImage.value = url;
+        commit("changeClientImage", url);
       }
     };
 
